@@ -486,16 +486,55 @@ tr:hover td{background:#0f1117}
 
 <script>
 // ═══════════════════════════════════════════════
+// SESSION — persist login for 30 min inactivity
+// ═══════════════════════════════════════════════
+const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
+const SESSION_KEY = 'crm_session_v1';
+
+function saveSession(){
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ ts: Date.now() }));
+}
+
+function touchSession(){
+  // Refresh timestamp on any activity
+  saveSession();
+}
+
+function checkSession(){
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY)||'{}');
+    return s.ts && (Date.now() - s.ts) < SESSION_DURATION;
+  } catch(e){ return false; }
+}
+
+function clearSession(){
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function showApp(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('crm-app').style.display = 'flex';
+  renderDash();
+  initSync();
+  // Keep session alive on any click/keypress
+  document.addEventListener('click',    touchSession, { passive:true });
+  document.addEventListener('keypress', touchSession, { passive:true });
+}
+
+// Auto-login if session still valid
+if(checkSession()){
+  showApp();
+}
+
+// ═══════════════════════════════════════════════
 // LOGIN
 // ═══════════════════════════════════════════════
 function doLogin(){
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value;
   if(u === 'leogen' && p === 'Leogen@1234'){
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('crm-app').style.display = 'flex';
-    renderDash();
-    initSync();
+    saveSession();
+    showApp();
   } else {
     const err = document.getElementById('login-error');
     err.style.display = 'block';
@@ -877,10 +916,11 @@ function initSync(){
     const db = firebase.database();
     _fbRef = db.ref('crm_v1');
 
-    // Pull latest data from Firebase on login (merge if Firebase has more)
+    // Pull latest data from Firebase — Firebase is always source of truth
     _fbRef.once('value', snap => {
       const d = snap.val();
-      if(d && d.leads && d.leads.length >= leads.length){
+      if(d && d.leads){
+        // Always apply Firebase data — it is the master record
         leads    = d.leads;
         projects = d.projects || projects;
         events   = d.events   || events;
