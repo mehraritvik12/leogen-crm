@@ -908,6 +908,10 @@ const FB_URL       = 'https://leogen-506bf-default-rtdb.firebaseio.com';
 const SESSION_ID   = Math.random().toString(36).slice(2); // unique per tab/device
 let   _fbRef       = null;
 
+// Firebase converts arrays → objects with numeric keys. Convert back.
+function toArr(v){ return Array.isArray(v) ? v : (v && typeof v==='object' ? Object.values(v) : []); }
+function fbToLeads(raw){ return toArr(raw).map(l=>({...l, followups: toArr(l.followups)})); }
+
 function initSync(){
   try {
     if(!firebase.apps.length){
@@ -921,10 +925,10 @@ function initSync(){
       const d = snap.val();
       if(d && d.leads){
         // Always apply Firebase data — it is the master record
-        leads    = d.leads;
-        projects = d.projects || projects;
-        events   = d.events   || events;
-        notes    = d.notes    || notes;
+        leads    = fbToLeads(d.leads);
+        projects = toArr(d.projects);
+        events   = toArr(d.events);
+        notes    = toArr(d.notes);
         localStorage.setItem(STORAGE_KEY, JSON.stringify({leads,projects,events,notes}));
         const active = document.querySelector('.section.active');
         if(active) render(active.id.replace('sec-',''));
@@ -935,10 +939,10 @@ function initSync(){
       _fbRef.on('value', snap => {
         const d = snap.val();
         if(!d || !d.leads || d._session === SESSION_ID) return; // skip our own writes
-        leads    = d.leads;
-        projects = d.projects || projects;
-        events   = d.events   || events;
-        notes    = d.notes    || notes;
+        leads    = fbToLeads(d.leads);
+        projects = toArr(d.projects);
+        events   = toArr(d.events);
+        notes    = toArr(d.notes);
         localStorage.setItem(STORAGE_KEY, JSON.stringify({leads,projects,events,notes}));
         const active = document.querySelector('.section.active');
         if(active) render(active.id.replace('sec-',''));
@@ -966,10 +970,10 @@ function loadFromStorage(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return;
     const d = JSON.parse(raw);
-    if(d.leads   && d.leads.length)    leads    = d.leads;
-    if(d.projects&& d.projects.length) projects = d.projects;
-    if(d.events  && d.events.length)   events   = d.events;
-    if(d.notes)                        notes    = d.notes;
+    if(d.leads)    leads    = fbToLeads(d.leads);
+    if(d.projects) projects = toArr(d.projects);
+    if(d.events)   events   = toArr(d.events);
+    if(d.notes)    notes    = toArr(d.notes);
   } catch(e){}
 }
 
