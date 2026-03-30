@@ -521,11 +521,6 @@ function showApp(){
   document.addEventListener('keypress', touchSession, { passive:true });
 }
 
-// Auto-login if session still valid
-if(checkSession()){
-  showApp();
-}
-
 // ═══════════════════════════════════════════════
 // LOGIN
 // ═══════════════════════════════════════════════
@@ -1813,6 +1808,9 @@ function exportCSV(){
 
 // INIT
 show('dashboard');
+
+// Auto-login if session still valid (must run after all let/const/functions are defined)
+if(checkSession()){ showApp(); }
 </script>
 </body>
 </html>
