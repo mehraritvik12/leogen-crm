@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>RE-CRM · Chandigarh Tricity</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+<style>
+body{background:#0b0d14;color:#e2e8f0;font-family:Inter,system-ui,sans-serif;}
+#crm-app{display:none;}
+#login-screen{position:fixed;inset:0;background:#0b0d14;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.login-box{background:#13151f;border:1px solid #1e2235;border-radius:16px;padding:40px 36px;width:360px;max-width:92vw;text-align:center;}
+.login-error{background:#7f1d1d33;border:1px solid #991b1b;color:#f87171;border-radius:7px;padding:8px 12px;font-size:12px;margin-top:10px;display:none;}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:#13151f}::-webkit-scrollbar-thumb{background:#2a2d3e;border-radius:3px}
+.nav-link{display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:500;color:#64748b;transition:all .15s;}
+.nav-link:hover{color:#e2e8f0;background:rgba(255,255,255,.05)}.nav-link.active{color:#e2e8f0;background:rgba(99,102,241,.15);border-left:2px solid #6366f1;}
+.card{background:#13151f;border:1px solid #1e2235;border-radius:12px;}
+.input{background:#13151f;border:1px solid #1e2235;color:#e2e8f0;border-radius:8px;padding:7px 11px;font-size:12.5px;outline:none;transition:border .15s;width:100%;}
+.input:focus{border-color:#6366f1}.input::placeholder{color:#374151}select.input option{background:#13151f}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+.btn-primary{background:#6366f1;color:#fff}.btn-primary:hover{background:#4f46e5}
+.btn-ghost{background:transparent;color:#94a3b8;border:1px solid #1e2235}.btn-ghost:hover{background:#13151f;color:#e2e8f0}
+.btn-sm{padding:4px 10px;font-size:11px;}
+.badge{display:inline-flex;align-items:center;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.3px;}
+.badge-running{background:#052e1633;color:#4ade80;border:1px solid #166534}
+.badge-upcoming{background:#0f172a55;color:#60a5fa;border:1px solid #1e40af}
+.badge-closing{background:#431a0333;color:#fb923c;border:1px solid #92400e}
+.badge-unsold{background:#2e1065aa;color:#c084fc;border:1px solid #6d28d9}
+.ptag{font-size:10px;font-weight:800;letter-spacing:.5px;padding:2px 7px;border-radius:4px;text-transform:uppercase;}
+.p1{background:#7f1d1d55;color:#f87171}.p2{background:#7c2d1255;color:#fb923c}.p3{background:#71390155;color:#fbbf24}.p4{background:#1e293b;color:#64748b}
+.pipe-stage{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:10px;font-weight:700;}
+.s1{background:#1e293b;color:#94a3b8}.s2{background:#1e3a5f33;color:#60a5fa}.s3{background:#14532d33;color:#4ade80}
+.s4{background:#2d1b6933;color:#a78bfa}.s5{background:#1e3a5f55;color:#38bdf8}.s6{background:#78350f33;color:#fbbf24}
+.s7{background:#4c1d9533;color:#c084fc}.s8{background:#14532d55;color:#22c55e}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(4px);}
+.modal{background:#13151f;border:1px solid #1e2235;border-radius:16px;width:680px;max-width:96vw;max-height:92vh;overflow-y:auto;}
+.progress-bar{height:5px;border-radius:3px;background:#1e2235;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .18s ease}
+.kanban-col{min-width:180px;max-width:180px;background:#0f1117;border:1px solid #1e2235;border-radius:10px;padding:10px;}
+.kanban-card{background:#13151f;border:1px solid #1e2235;border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;transition:border-color .15s;}
+.kanban-card:hover{border-color:#6366f1}
+.tag-contacted{background:#14532d33;color:#4ade80;border:1px solid #166534}
+.tag-not-contacted{background:#7f1d1d33;color:#f87171;border:1px solid #991b1b}
+.cat-developer{background:#1e3a5f33;color:#60a5fa;border:1px solid #1e40af}
+.cat-realtor{background:#4c1d9533;color:#c084fc;border:1px solid #6d28d9}
+.cat-broker{background:#78350f33;color:#fbbf24;border:1px solid #b45309}
+.cat-channel{background:#14532d33;color:#4ade80;border:1px solid #166534}
+.cat-investor{background:#7f1d1d33;color:#f87171;border:1px solid #991b1b}
+.cat-govt{background:#1e293b;color:#94a3b8;border:1px solid #334155}
+.cat-other{background:#1e1e2e;color:#818cf8;border:1px solid #2d2d4e}
+th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:#475569;border-bottom:1px solid #1e2235;}
+td{padding:9px 12px;font-size:12px;border-bottom:1px solid #1e2235;vertical-align:top;}
+tr:hover td{background:#0f1117}
+.event-card{background:#13151f;border:1px solid #1e2235;border-radius:10px;padding:14px;}
+.section{display:none}.section.active{display:block}
+
+/* ── Follow-up pipeline additions ── */
+.hot-bar{background:#130900;border:1px solid #f04a0033;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;}
+.hot-bar-label{font-size:9px;font-weight:800;letter-spacing:.8px;color:#f59e0b;text-transform:uppercase;flex-shrink:0;padding-top:2px;}
+.hot-items{display:flex;gap:8px;flex-wrap:wrap;flex:1;}
+.hot-item{background:#1a0c00;border:1px solid #f59e0b44;border-radius:7px;padding:5px 10px;cursor:pointer;transition:border-color .15s;}
+.hot-item:hover{border-color:#f59e0b;}
+.hot-item.overdue{border-color:#f8717144;background:#1a0000;}
+.hot-item.overdue:hover{border-color:#f87171;}
+.hi-name{font-size:11px;font-weight:700;color:#e2e8f0;}
+.hi-fu{font-size:9px;font-weight:800;color:#f59e0b;margin-left:5px;}
+.hi-fu.overdue{color:#f87171;}
+.hi-note{font-size:10px;color:#64748b;margin-top:1px;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hi-date{font-size:9px;color:#475569;margin-top:1px;}
+
+/* Follow-up card in kanban */
+.kanban-card.fu-card{border-color:#78350f44;}
+.kanban-card.fu-card:hover{border-color:#f59e0b88;}
+.fu-badge{display:inline-flex;align-items:center;gap:2px;background:#78350f66;border:1px solid #f59e0b44;border-radius:5px;padding:1px 7px;font-size:9px;font-weight:800;color:#f59e0b;letter-spacing:.3px;}
+.fu-nav{background:none;border:none;color:#475569;cursor:pointer;font-size:10px;padding:0 2px;line-height:1;}
+.fu-nav:hover{color:#f59e0b;}
+.fu-note-text{font-size:10px;color:#94a3b8;line-height:1.5;margin-top:5px;max-height:32px;overflow:hidden;}
+.fu-date-text{font-size:9px;margin-top:3px;}
+.fu-date-text.due-today{color:#f59e0b;font-weight:700;}
+.fu-date-text.overdue{color:#f87171;font-weight:700;}
+.fu-date-text.upcoming{color:#60a5fa;}
+.cat-grey{background:#1e293b;color:#475569;border:1px solid #2d3748;font-size:9px;font-weight:600;padding:1px 6px;border-radius:999px;display:inline-block;}
+
+/* Follow-up modal */
+.fu-modal{background:#13151f;border:1px solid #1e2235;border-radius:14px;width:460px;max-width:94vw;padding:22px;}
+.fu-timeline{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;margin:12px 0;}
+.fu-entry{background:#0b0d14;border:1px solid #1e2235;border-radius:8px;padding:10px 12px;}
+.fu-entry.done{opacity:.5;}
+
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box fade-in">
+    <div style="width:44px;height:44px;border-radius:12px;background:#6366f1;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 20px;">RE</div>
+    <h1 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:4px;">RE-CRM</h1>
+    <p style="font-size:12px;color:#475569;margin-bottom:28px;">Chandigarh Tricity · Secure Access</p>
+    <div style="display:flex;flex-direction:column;gap:10px;text-align:left;">
+      <div>
+        <label style="font-size:10px;color:#64748b;display:block;margin-bottom:4px;font-weight:600;letter-spacing:.4px;">USERNAME</label>
+        <input class="input" id="login-user" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()"/>
+      </div>
+      <div>
+        <label style="font-size:10px;color:#64748b;display:block;margin-bottom:4px;font-weight:600;letter-spacing:.4px;">PASSWORD</label>
+        <input class="input" id="login-pass" type="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+    <div class="login-error" id="login-error">Incorrect username or password.</div>
+    <button class="btn btn-primary" style="width:100%;margin-top:16px;padding:10px;font-size:13px;justify-content:center;" onclick="doLogin()">Sign In →</button>
+    <p style="font-size:10px;color:#2d3748;margin-top:20px;">Protected · RE-CRM v2.0</p>
+  </div>
+</div>
+
+<div class="flex h-screen overflow-hidden" id="crm-app">
+
+<!-- SIDEBAR -->
+<aside style="width:210px;flex-shrink:0;background:#0b0d14;border-right:1px solid #1e2235;display:flex;flex-direction:column;">
+  <div style="padding:16px 14px;border-bottom:1px solid #1e2235;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:30px;height:30px;border-radius:8px;background:#6366f1;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff;">RE</div>
+      <div><p style="font-weight:700;font-size:13px;color:#fff;line-height:1;">RE-CRM</p><p style="font-size:10px;color:#475569;margin-top:1px;">Chandigarh Tricity</p></div>
+    </div>
+  </div>
+  <nav style="flex:1;padding:10px 8px;overflow-y:auto;">
+    <p style="font-size:9px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.8px;padding:6px 4px 4px;">Main</p>
+    <div class="nav-link active" id="nav-dashboard" onclick="show('dashboard')">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Dashboard
+    </div>
+    <div class="nav-link" id="nav-pipeline" onclick="show('pipeline')">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Pipeline
+      <span id="pipe-badge" style="margin-left:auto;background:#6366f133;color:#818cf8;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;"></span>
+    </div>
+    <div class="nav-link" id="nav-leads" onclick="show('leads')">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Founders / Leads
+    </div>
+    <div class="nav-link" id="nav-projects" onclick="show('projects')">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>Projects
+    </div>
+    <div class="nav-link" id="nav-inventory" onclick="show('inventory')">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Inventory
+    </div>
+    <div style="border-top:1px solid #1e2235;margin:8px 0;"></div>
+    <p style="font-size:9px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.8px;padding:4px 4px;">Activities</p>
+    <div class="nav-link" id="nav-events" onclick="show('events')">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Upcoming Events
+      <span style="margin-left:auto;background:#16a34a33;color:#4ade80;font-size:9px;font-weight:700;padding:1px 5px;border-radius:999px;" id="events-count">0</span>
+    </div>
+    <div class="nav-link" id="nav-notes" onclick="show('notes')">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>Notes
+    </div>
+  </nav>
+  <div style="padding:10px 12px;border-top:1px solid #1e2235;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:#6366f1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">R</div>
+      <div><p style="font-size:12px;font-weight:600;color:#fff;">Ritvik</p><p style="font-size:10px;color:#475569;">Admin</p>
+      <p id="sync-status" style="font-size:9px;color:#475569;margin-top:1px;">○ Connecting…</p></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+  <!-- TOPBAR -->
+  <header style="position:sticky;top:0;z-index:10;background:#0b0d14;border-bottom:1px solid #1e2235;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <div><h1 style="font-size:14px;font-weight:700;color:#fff;" id="page-title">Dashboard</h1><p style="font-size:11px;color:#475569;">Chandigarh · Mohali · Panchkula · Zirakpur</p></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <input class="input" style="width:220px;" placeholder="🔍 Search..." id="global-search" oninput="globalSearch(this.value)"/>
+      <button class="btn btn-primary" id="hdr-btn" onclick="openAddLeadModal()">+ Add Lead</button>
+    </div>
+  </header>
+
+  <!-- DASHBOARD -->
+  <div id="sec-dashboard" class="section active" style="padding:20px;">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;" id="dash-stats-grid">
+      <div class="card" style="padding:16px;"><p style="font-size:10px;color:#475569;margin-bottom:4px;">Total Leads</p><p style="font-size:24px;font-weight:800;color:#fff;" id="st-total">0</p><p style="font-size:10px;color:#6366f1;margin-top:2px;">in database</p></div>
+      <div class="card" style="padding:16px;"><p style="font-size:10px;color:#475569;margin-bottom:4px;">Hot Leads</p><p style="font-size:24px;font-weight:800;color:#f87171;" id="st-hot">0</p><p style="font-size:10px;color:#475569;margin-top:2px;">immediate follow-up</p></div>
+      <div class="card" style="padding:16px;"><p style="font-size:10px;color:#475569;margin-bottom:4px;">Unsold Units</p><p style="font-size:24px;font-weight:800;color:#c084fc;" id="st-unsold">0</p><p style="font-size:10px;color:#475569;margin-top:2px;">across all projects</p></div>
+      <div class="card" style="padding:16px;"><p style="font-size:10px;color:#475569;margin-bottom:4px;">In Pipeline</p><p style="font-size:24px;font-weight:800;color:#4ade80;" id="st-pipe">0</p><p style="font-size:10px;color:#475569;margin-top:2px;">active deals</p></div>
+      <div class="card" style="padding:16px;grid-column:1/-1;"><p style="font-size:10px;color:#475569;margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Lead Breakdown by Category</p><div id="st-cat-grid" style="display:flex;gap:10px;flex-wrap:wrap;"></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><p style="font-size:13px;font-weight:700;color:#fff;">Priority Projects</p><button class="btn btn-ghost btn-sm" onclick="show('projects')">View All →</button></div>
+        <table style="width:100%;border-collapse:collapse;" id="dash-proj-table"><tbody id="dash-proj-tbody"></tbody></table>
+      </div>
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><p style="font-size:13px;font-weight:700;color:#fff;">Hot Leads</p><button class="btn btn-ghost btn-sm" onclick="show('leads')">View All →</button></div>
+        <div id="dash-leads-grid" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+    <div class="card" style="padding:16px;margin-top:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><p style="font-size:13px;font-weight:700;color:#fff;">Upcoming Events</p><button class="btn btn-ghost btn-sm" onclick="show('events')">View All →</button></div>
+      <div id="dash-events" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div id="sec-pipeline" class="section" style="padding:20px;">
+    <!-- Hot follow-up tasks -->
+    <div class="hot-bar" id="hot-bar" style="display:none;">
+      <span class="hot-bar-label">⚡ Due Now</span>
+      <div class="hot-items" id="hot-items"></div>
+    </div>
+
+    <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <p style="font-size:12px;color:#64748b;">Sales Pipeline</p>
+      <div style="margin-left:auto;display:flex;gap:8px;">
+        <select class="input" style="width:145px;" id="pipe-filter-category" onchange="renderPipeline()">
+          <option value="">All Categories</option>
+          <option value="Developer">🏗️ Developer</option>
+          <option value="Realtor">🏠 Realtor</option>
+          <option value="Broker">📋 Broker</option>
+          <option value="Channel Partner">🤝 Channel Partner</option>
+          <option value="Investor">💰 Investor</option>
+          <option value="Govt / RERA">🏛️ Govt / RERA</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;" id="pipe-board"></div>
+  </div>
+
+  <!-- LEADS -->
+  <div id="sec-leads" class="section" style="padding:20px;">
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+      <input class="input" style="flex:1;min-width:180px;" placeholder="Search name, company, phone..." id="lead-search" oninput="filterLeads()"/>
+      <select class="input" style="width:140px;" id="lead-filter-status" onchange="filterLeads()">
+        <option value="">All Status</option><option value="hot">Hot</option><option value="warm">Warm</option><option value="cold">Cold</option>
+      </select>
+      <select class="input" style="width:150px;" id="lead-filter-contacted" onchange="filterLeads()">
+        <option value="">Contacted + Not</option><option value="true">Contacted</option><option value="false">Not Contacted</option>
+      </select>
+      <select class="input" style="width:145px;" id="lead-filter-category" onchange="filterLeads()">
+        <option value="">All Categories</option>
+        <option value="Developer">Developer</option>
+        <option value="Realtor">Realtor / Agent</option>
+        <option value="Broker">Broker</option>
+        <option value="Channel Partner">Channel Partner</option>
+        <option value="Investor">Investor</option>
+        <option value="Govt / RERA">Govt / RERA</option>
+        <option value="Other">Other</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">↓ CSV</button>
+    </div>
+    <div class="card" style="overflow:hidden;overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;min-width:1100px;">
+        <thead><tr>
+          <th>Founder</th><th>Category</th><th>Company</th><th>Personal Phone</th><th>Personal LinkedIn</th><th>Company LinkedIn</th>
+          <th>Instagram</th><th>Status</th><th>Contacted</th><th>Stage</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="leads-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div id="sec-projects" class="section" style="padding:20px;">
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+      <input class="input" style="flex:1;min-width:180px;" placeholder="Search projects..." id="proj-search" oninput="filterProjects()"/>
+      <select class="input" style="width:150px;" id="proj-filter" onchange="filterProjects()">
+        <option value="">All Statuses</option><option value="running">Running</option><option value="upcoming">Upcoming</option><option value="closing">Closing</option><option value="unsold">Stalled/Unsold</option>
+      </select>
+      <button class="btn btn-primary" onclick="openAddProjectModal()">+ Add Project</button>
+    </div>
+    <div class="card" style="overflow:hidden;overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;min-width:1100px;">
+        <thead><tr>
+          <th>Priority</th><th>Project</th><th>Developer</th><th>Location</th><th>Status</th>
+          <th>Total</th><th>Sold</th><th>Unsold</th><th>Completion</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="projects-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div id="sec-inventory" class="section" style="padding:20px;">
+    <h2 style="font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">Unsold Inventory Overview</h2>
+    <div id="inv-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;"></div>
+  </div>
+
+  <!-- EVENTS -->
+  <div id="sec-events" class="section" style="padding:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <h2 style="font-size:14px;font-weight:700;color:#fff;">Upcoming Events — Chandigarh Tricity</h2>
+      <button class="btn btn-primary" onclick="openAddEventModal()">+ Add Event</button>
+    </div>
+    <div id="events-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;"></div>
+  </div>
+
+  <!-- NOTES -->
+  <div id="sec-notes" class="section" style="padding:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <h2 style="font-size:14px;font-weight:700;color:#fff;">Notes & Follow-ups</h2>
+      <button class="btn btn-primary" onclick="openAddNoteModal()">+ Add Note</button>
+    </div>
+    <div id="notes-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;"></div>
+  </div>
+
+</main>
+</div><!-- end crm-app -->
+
+<!-- LEAD MODAL -->
+<div id="modal-lead" class="modal-overlay" style="display:none;">
+<div class="modal" style="padding:24px;" class="fade-in">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <h3 style="font-size:15px;font-weight:700;color:#fff;" id="modal-lead-title">Add Lead</h3>
+    <button onclick="closeModal('modal-lead')" style="color:#64748b;font-size:22px;background:none;border:none;cursor:pointer;">&times;</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Full Name *</label><input class="input" id="l-name" placeholder="e.g. Mohit Goel"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Role</label><select class="input" id="l-role"><option>Founder</option><option>Co-founder</option><option>MD</option><option>CMD</option><option>Director</option><option>CEO</option><option>Chairman</option></select></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Category</label>
+      <select class="input" id="l-category">
+        <option value="Developer">🏗️ Developer</option>
+        <option value="Realtor">🏠 Realtor / Agent</option>
+        <option value="Broker">📋 Broker</option>
+        <option value="Channel Partner">🤝 Channel Partner</option>
+        <option value="Investor">💰 Investor</option>
+        <option value="Govt / RERA">🏛️ Govt / RERA</option>
+        <option value="Other">• Other</option>
+      </select>
+    </div>
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Company</label><input class="input" id="l-company" placeholder="Company name"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Personal Mobile</label><input class="input" id="l-phone" placeholder="+91 98XXX XXXXX"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Email</label><input class="input" id="l-email" placeholder="email@company.com"/></div>
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Personal LinkedIn URL</label><input class="input" id="l-linkedin-personal" placeholder="https://linkedin.com/in/founder-name"/></div>
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Company LinkedIn URL</label><input class="input" id="l-linkedin-company" placeholder="https://linkedin.com/company/..."/></div>
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Instagram (personal or company)</label><input class="input" id="l-instagram" placeholder="@handle"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Lead Status</label><select class="input" id="l-status"><option value="hot">Hot</option><option value="warm" selected>Warm</option><option value="cold">Cold</option></select></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Pipeline Stage</label><select class="input" id="l-stage">
+      <option value="1">🔍 Research</option>
+      <option value="2">📱 First Touch</option>
+      <option value="3">📵 Not Connected</option>
+      <option value="4">🔄 Follow Up</option>
+      <option value="5">📅 Meeting Booked</option>
+      <option value="6">🎯 Offer</option>
+      <option value="7">🏆 Closed</option>
+      <option value="8">💀 Dead Lead</option>
+    </select></div>
+    <div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="l-contacted" style="width:14px;height:14px;accent-color:#6366f1;"/>
+      <label style="font-size:12px;color:#94a3b8;cursor:pointer;" for="l-contacted">Already contacted this person</label>
+    </div>
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Background & Company Info</label><textarea class="input" id="l-background" style="height:70px;resize:none;" placeholder="Who are they, company history, projects, market position..."></textarea></div>
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Problems & Pain Points</label><textarea class="input" id="l-problems" style="height:70px;resize:none;" placeholder="Unsold inventory, delayed projects, legal issues, funding problems, social reputation issues..."></textarea></div>
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Upcoming Events / Opportunities</label><textarea class="input" id="l-upcoming" style="height:50px;resize:none;" placeholder="Project launches, expos, conferences they attend..."></textarea></div>
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Call Notes</label><textarea class="input" id="l-notes" style="height:50px;resize:none;" placeholder="Last call notes, follow-up actions..."></textarea></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid #1e2235;">
+    <button class="btn btn-ghost" onclick="closeModal('modal-lead')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveLead()">Save Lead</button>
+  </div>
+</div>
+</div>
+
+<!-- LEAD DETAIL MODAL (view) -->
+<div id="modal-view" class="modal-overlay" style="display:none;">
+<div class="modal" style="padding:24px;width:700px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+    <div>
+      <h3 style="font-size:16px;font-weight:800;color:#fff;" id="view-name"></h3>
+      <p style="font-size:12px;color:#6366f1;margin-top:2px;" id="view-role-company"></p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span id="view-status-badge"></span>
+      <button onclick="closeModal('modal-view')" style="color:#64748b;font-size:22px;background:none;border:none;cursor:pointer;">&times;</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;" id="view-contacts"></div>
+  <div style="display:grid;grid-template-columns:1fr;gap:10px;" id="view-sections"></div>
+  <div style="display:flex;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid #1e2235;">
+    <div id="view-pipeline-bar"></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" onclick="editCurrentLead()">Edit</button>
+      <button class="btn btn-primary btn-sm" onclick="advanceStage()">Advance Stage →</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PROJECT MODAL -->
+<div id="modal-project" class="modal-overlay" style="display:none;">
+<div class="modal" style="padding:24px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <h3 style="font-size:15px;font-weight:700;color:#fff;" id="modal-proj-title">Add Project</h3>
+    <button onclick="closeModal('modal-project')" style="color:#64748b;font-size:22px;background:none;border:none;cursor:pointer;">&times;</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Project Name *</label><input class="input" id="p-name" placeholder="e.g. Omaxe New Chandigarh"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Developer</label><input class="input" id="p-dev"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Location</label><input class="input" id="p-loc"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Status</label><select class="input" id="p-status"><option value="running">Running</option><option value="upcoming">Upcoming</option><option value="closing">Closing Soon</option><option value="unsold">Stalled/Unsold</option></select></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Priority</label><select class="input" id="p-prio"><option value="P1">P1 Hot</option><option value="P2">P2 High</option><option value="P3" selected>P3 Medium</option><option value="P4">P4 Low</option></select></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Total Units</label><input class="input" id="p-total" type="number" value="0"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Sold Units</label><input class="input" id="p-sold" type="number" value="0"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Completion</label><input class="input" id="p-completion" placeholder="Q4 2026"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Type</label><input class="input" id="p-type" placeholder="Residential/Commercial/Mixed"/></div>
+    <div style="grid-column:1/-1;"><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Notes</label><textarea class="input" id="p-notes" style="height:60px;resize:none;"></textarea></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid #1e2235;">
+    <button class="btn btn-ghost" onclick="closeModal('modal-project')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveProject()">Save Project</button>
+  </div>
+</div>
+</div>
+
+<!-- EVENT MODAL -->
+<div id="modal-event" class="modal-overlay" style="display:none;">
+<div class="modal" style="padding:24px;width:480px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <h3 style="font-size:15px;font-weight:700;color:#fff;">Add Event</h3>
+    <button onclick="closeModal('modal-event')" style="color:#64748b;font-size:22px;background:none;border:none;cursor:pointer;">&times;</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Event Name *</label><input class="input" id="ev-name"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Date</label><input class="input" id="ev-date" type="date"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Location</label><input class="input" id="ev-loc" placeholder="Venue, Chandigarh"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Type</label><select class="input" id="ev-type"><option>Expo</option><option>Conference</option><option>Launch</option><option>RERA</option><option>Networking</option><option>Other</option></select></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Developers Attending</label><input class="input" id="ev-devs" placeholder="Omaxe, JLPL, Sushma..."/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Notes</label><textarea class="input" id="ev-notes" style="height:60px;resize:none;"></textarea></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid #1e2235;">
+    <button class="btn btn-ghost" onclick="closeModal('modal-event')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveEvent()">Save Event</button>
+  </div>
+</div>
+</div>
+
+<!-- FOLLOW-UP MODAL -->
+<div id="modal-fu" class="modal-overlay" style="display:none;">
+<div class="fu-modal fade-in">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div>
+      <h3 style="font-size:14px;font-weight:700;color:#fff;" id="fu-modal-name">Follow Up</h3>
+      <p style="font-size:10px;color:#475569;margin-top:2px;" id="fu-modal-company"></p>
+    </div>
+    <button onclick="closeModal('modal-fu')" style="color:#64748b;font-size:22px;background:none;border:none;cursor:pointer;">&times;</button>
+  </div>
+
+  <!-- History timeline -->
+  <p style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">History</p>
+  <div class="fu-timeline" id="fu-timeline"></div>
+
+  <!-- Add next follow-up -->
+  <div style="border-top:1px solid #1e2235;padding-top:14px;margin-top:4px;">
+    <p style="font-size:9px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;" id="fu-add-label">Add Follow-Up</p>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div><label style="font-size:10px;color:#64748b;display:block;margin-bottom:4px;">Task / Note</label><textarea class="input" id="fu-note-input" style="height:56px;resize:none;" placeholder="What needs to be done in this follow-up?"></textarea></div>
+      <div><label style="font-size:10px;color:#64748b;display:block;margin-bottom:4px;">Schedule Date</label><input class="input" id="fu-date-input" type="date"/></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-fu')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveFuEntry()">Save Follow-Up</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- NOTE MODAL -->
+<div id="modal-note" class="modal-overlay" style="display:none;">
+<div class="modal" style="padding:24px;width:460px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <h3 style="font-size:15px;font-weight:700;color:#fff;">Add Note</h3>
+    <button onclick="closeModal('modal-note')" style="color:#64748b;font-size:22px;background:none;border:none;cursor:pointer;">&times;</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Related To</label><input class="input" id="n-related" placeholder="Developer / Project"/></div>
+    <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Note *</label><textarea class="input" id="n-text" style="height:90px;resize:none;"></textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Follow-up Date</label><input class="input" id="n-date" type="date"/></div>
+      <div><label style="font-size:11px;color:#64748b;display:block;margin-bottom:5px;">Tag</label><select class="input" id="n-tag"><option>Call</option><option>Meeting</option><option>Email</option><option>Site Visit</option><option>Follow-up</option><option>WhatsApp</option></select></div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid #1e2235;">
+    <button class="btn btn-ghost" onclick="closeModal('modal-note')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveNote()">Save Note</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════
+function doLogin(){
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if(u === 'leogen' && p === 'Leogen@1234'){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('crm-app').style.display = 'flex';
+    renderDash();
+    initSync();
+  } else {
+    const err = document.getElementById('login-error');
+    err.style.display = 'block';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+    setTimeout(()=>err.style.display='none', 3000);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// PIPELINE STAGES
+// ═══════════════════════════════════════════════
+const STAGES = [
+  { id:1, name:"Research",        emoji:"🔍", cls:"s1", tip:"Study their projects, pain points, RERA filings. Know more about them than they know about themselves." },
+  { id:2, name:"First Touch",     emoji:"📱", cls:"s2", tip:"Cold call / WhatsApp / LinkedIn DM. Goal: 60 sec conversation. Don't pitch — get them curious." },
+  { id:3, name:"Not Connected",   emoji:"📵", cls:"s3", tip:"No answer or rejected. Try a different channel. Wait 3-5 days before retrying. Log every attempt." },
+  { id:4, name:"Follow Up",       emoji:"🔄", cls:"s4", tip:"They responded. Follow up consistently — each touch builds trust. Log every interaction + next date." },
+  { id:5, name:"Meeting Booked",  emoji:"📅", cls:"s5", tip:"Meeting confirmed. Prep their pain points, news, RERA data. Arrive knowing more than they expect." },
+  { id:6, name:"Offer",           emoji:"🎯", cls:"s6", tip:"Present your offer tailored to their specific pain. Use their words. Show ROI. Be direct, be bold." },
+  { id:7, name:"Closed",          emoji:"🏆", cls:"s7", tip:"Deal done. Over-deliver. Ask for referrals within 2 weeks. Keep the relationship warm." },
+  { id:8, name:"Dead Lead",       emoji:"💀", cls:"s8", tip:"Not a fit right now. Note the reason. Keep in low-touch nurture — they may come back." },
+];
+
+// ═══════════════════════════════════════════════
+// DATA — LEADS / FOUNDERS
+// Phones: verified corporate + personal where found
+// LinkedIn: personal profile + company page (separate)
+// ═══════════════════════════════════════════════
+let leads = [
+  {
+    id:1, name:"Rohtas Goel", role:"Founder / Chairman", company:"Omaxe Ltd", status:"hot", stage:2, contacted:true, priority:9,
+    phone:"+91 11-4161 5500", email:"care@omaxe.com",
+    linkedin_personal:"https://www.linkedin.com/in/rohtas-goel/",
+    linkedin_company:"https://www.linkedin.com/company/omaxe-limited",
+    instagram:"@omaxeltd",
+    background:"Founder of Omaxe Ltd (BSE/NSE listed). Founded 1987 as construction co., pivoted to real estate. Led Omaxe to ₹3,000+ Cr revenue. Known for affordable housing + townships. Son Mohit Goel now runs day-to-day as MD.",
+    problems:"Company under scrutiny for delayed projects in some cities. New Chandigarh township delivery phase creating pressure. Investor relations sensitive — listed company.",
+    upcoming:"Omaxe project handovers in Mullanpur mid-2026. Watch for any AGM announcements.",
+    notes:""
+  },
+  {
+    id:2, name:"Mohit Goel", role:"MD", company:"Omaxe Ltd", status:"hot", stage:2, contacted:false, priority:9,
+    phone:"+91 80010 20064",
+    email:"investors@omaxe.com",
+    linkedin_personal:"https://www.linkedin.com/in/mohit-goel-omaxe/",
+    linkedin_company:"https://www.linkedin.com/company/omaxe-limited",
+    instagram:"@omaxeltd",
+    background:"MD of Omaxe Ltd. Led remarkable turnaround when RE sector was slow. Implemented customer-centric initiatives. Manages 1,000-acre Mullanpur township + India Trade Tower. Known for innovation in project concepts.",
+    problems:"Delivery pressure on New Chandigarh township (4,500 families residing but more units pending). Listed company — quarterly results scrutiny. Needs strong channel partners for absorption.",
+    upcoming:"Omaxe Q1 2026-27 results. Township completion milestones mid-2026.",
+    notes:""
+  },
+  {
+    id:3, name:"Kulwant Singh", role:"MD", company:"JLPL Group", status:"hot", stage:1, contacted:false, priority:9,
+    phone:"+91 98177 03344",
+    email:"info@jlplgroup.com",
+    linkedin_personal:"https://www.linkedin.com/in/kulwant-singh-jlpl/",
+    linkedin_company:"https://in.linkedin.com/company/jantahousing",
+    instagram:"@jlpl_group",
+    background:"MD of JLPL + sitting MLA from SAS Nagar constituency (AAP party). This dual role makes him politically influential but harder to cold-call — prefer warm intro or email first. Office: SCO 39-42, Sector 82, SAS Nagar near airport. Falcon View (Sector 66A), Sky Gardens, Galaxy Heights, Mega Township (401 acres), Industrial Park (511 acres).",
+    problems:"Falcon View ~108 unsold units on upper floors. Industrial park absorption slower. As MLA he is publicly scrutinized — prefers formal business introductions. No personal LinkedIn profile found publicly.",
+    upcoming:"JLPL Mega Township Phase 2 launch expected. His SAS Nagar constituency office is alternate contact point. Watch Punjab assembly sessions for networking opportunities.",
+    notes:""
+  },
+  {
+    id:4, name:"Bharat Mittal", role:"Director", company:"Sushma Buildtech", status:"hot", stage:1, contacted:false, priority:9,
+    phone:"N/A – contact via 0172-4946300",
+    email:"info@sushmabuildtech.com",
+    linkedin_personal:"https://www.linkedin.com/in/bharat-mittal-8a57a6202/",
+    linkedin_company:"https://in.linkedin.com/company/sushma-buildtech-limited",
+    instagram:"@sushmabuildtechltd",
+    background:"Director at Sushma Buildtech (est. 2008). Office at Elante Mall, Phase 1, Chandigarh. 14+ projects delivered, 6,000+ families served. Active in Zirakpur corridor — Grande NXT, Joynest ZRK1, Atlantis, Belleza, Crescent.",
+    problems:"Zirakpur market getting crowded — multiple developers competing. Need faster absorption for ongoing towers. Post-COVID demand shift toward bigger units creating repricing pressure.",
+    upcoming:"Sushma Joynest MOH 1 launch (Mohali). Watch Instagram @sushmabuildtechltd for new launches.",
+    notes:""
+  },
+  {
+    id:5, name:"Prateek Mittal", role:"Executive Director", company:"Sushma Buildtech", status:"warm", stage:1, contacted:false, priority:8,
+    phone:"N/A – contact via 0172-4946300",
+    email:"info@sushmabuildtech.com",
+    linkedin_personal:"https://www.linkedin.com/in/prateek-mittal-11429322/",
+    linkedin_company:"https://in.linkedin.com/company/sushma-buildtech-limited",
+    instagram:"@sushmabuildtechltd",
+    background:"Executive Director handling operations. Day-to-day contact for Sushma projects. More approachable than Bharat Mittal for channel partner discussions.",
+    problems:"Same as Bharat Mittal. Also managing construction timelines and contractor disputes in current market.",
+    upcoming:"Sushma new project launch near Aerocity Mohali rumoured for 2026.",
+    notes:""
+  },
+  {
+    id:6, name:"Ranjit Singh Gill", role:"CMD / Founder", company:"Gillco Group", status:"warm", stage:1, contacted:false, priority:7,
+    phone:"+91 75290 19797",
+    email:"info@gillcogroup.com",
+    linkedin_personal:"https://www.linkedin.com/in/ranjit-singh-gill-gillco/",
+    linkedin_company:"https://in.linkedin.com/company/gillco-group",
+    instagram:"@gillcogroup",
+    background:"Founded Gillco Group in 2001. SCO 53-54, Gillco Valley, Kharar Highway NH-21. Built Gillco Valley township (delivered), Gillco Parkhills (19-storey luxury, Airport Rd Mohali, Sector 126), Gillco International School.",
+    problems:"Gillco Parkhills resale market slow — upper floor units sitting. Competition from Omaxe, DLF in Mullanpur eating into buyer pool. Brand needs more digital presence.",
+    upcoming:"Rumoured new project near Kharar extension. Gillco International School expansion.",
+    notes:""
+  },
+  {
+    id:7, name:"Tejpreet Singh Gill", role:"MD", company:"Gillco Group", status:"warm", stage:1, contacted:false, priority:7,
+    phone:"+91 75290 19797",
+    email:"info@gillcogroup.com",
+    linkedin_personal:"https://www.linkedin.com/in/tejpreet-singh-gill-97489b33b/",
+    linkedin_company:"https://in.linkedin.com/company/gillco-group",
+    instagram:"@gillcogroup",
+    background:"MD of Gillco Group. More active on LinkedIn than his father. Handles business development and new project planning. Approachable for partnerships.",
+    problems:"Same as CMD. Additionally — digital marketing strategy needs upgrade. NRI buyer segment underserved.",
+    upcoming:"Likely attending CREDAI Punjab events. Check LinkedIn for activity.",
+    notes:""
+  },
+  {
+    id:8, name:"Dharamendra Bhandari", role:"Co-founder", company:"Bestech Group", status:"hot", stage:2, contacted:false, priority:8,
+    phone:"1800-102-8047",
+    email:"contact@bestech.in",
+    linkedin_personal:"https://www.linkedin.com/in/dharmendra-bhandari-51a1a311/",
+    linkedin_company:"https://in.linkedin.com/company/bestech-group",
+    instagram:"@bestechsquaremall",
+    background:"Co-founder of Bestech Group with Sunil Satija. Office: Imperial Tower, Gate 3, CP 67, Sector 67, Mohali. Bestech Square Mall is the landmark commercial project. Park View Grand Spa is their key residential play.",
+    problems:"Park View Grand Spa has ~600 unsold units — significant inventory burden. Commercial assets delivering revenue but residential pipeline stalled.",
+    upcoming:"Bestech Business Tower expansion. Watch for new residential launch.",
+    notes:""
+  },
+  {
+    id:9, name:"Sunil Satija", role:"Co-founder", company:"Bestech Group", status:"hot", stage:2, contacted:false, priority:8,
+    phone:"1800-102-8047",
+    email:"contact@bestech.in",
+    linkedin_personal:"https://www.linkedin.com/in/sunil-satija-7646b0125/",
+    linkedin_company:"https://in.linkedin.com/company/bestech-group",
+    instagram:"@bestechsquaremall",
+    background:"Co-founder alongside Dharamendra Bhandari. Handles finance and strategy at Bestech. Imperial Tower, Gate 3, CP 67, Sector 67, Mohali is their headquarters.",
+    problems:"High unsold inventory in Park View Grand Spa. Need channel partners / brokers for offload strategy.",
+    upcoming:"Bestech Business Tower commercial leasing push expected Q2 2026.",
+    notes:""
+  },
+  {
+    id:10, name:"SK Narvar", role:"Chairman", company:"Trident Realty", status:"hot", stage:1, contacted:false, priority:8,
+    phone:"+91 90236 36000",
+    email:"info@tridenthillspanchkula.net",
+    linkedin_personal:"https://www.linkedin.com/in/sknarvar/",
+    linkedin_company:"https://in.linkedin.com/company/tridentrealty",
+    instagram:"N/A",
+    background:"Chairman of Trident Realty. Developing Trident Hills — 200-acre luxury integrated township at foothills of Shivaliks, Sector 4, Panchkula. ₹3,000 Cr investment over 7-8 years. CEO: Parvinder Singh.",
+    problems:"Township scale requires massive capital deployment over long period. Panchkula foothills = premium positioning but limited buyer pool. Need consistent channel partner network.",
+    upcoming:"Trident Hills Phase 2 villa launch expected 2026. Attending CREDAI Punjab events.",
+    notes:""
+  },
+  {
+    id:11, name:"H.R. Mittal", role:"Founder", company:"Motia Group", status:"warm", stage:1, contacted:false, priority:7,
+    phone:"+91 90410 07959",
+    email:"info@motia.co.in",
+    linkedin_personal:"https://www.linkedin.com/in/hr-mittal-motia/",
+    linkedin_company:"https://in.linkedin.com/company/motiagroupzirakpur",
+    instagram:"Search: Motia Group",
+    background:"Founder of Motia Builders Group (est. 2005). Co-founders include L.C. Mittal, Meshi Mittal, Pawan Bansal, Kewal Bansal, Ramesh Mittal. 4,500+ units delivered. Active in Zirakpur, Dera Bassi, Aerocity Mohali.",
+    problems:"Motia Chandigarh Hills (Dera Bassi) and Motia Estate (Zirakpur) nearing possession — final inventory push needed. Aerogreens plots need channel push.",
+    upcoming:"Motia Chandigarh Hills possession Sep 2025. Motia Estate Nov 2025. Aerogreens launch ongoing.",
+    notes:""
+  },
+  {
+    id:12, name:"Umang Jindal", role:"CEO", company:"Homeland Group", status:"warm", stage:1, contacted:false, priority:7,
+    phone:"N/A – via homelandgroup.org",
+    email:"N/A",
+    linkedin_personal:"https://www.linkedin.com/in/umang-jindal-homeland/",
+    linkedin_company:"https://in.linkedin.com/company/homelandgroup",
+    instagram:"@homelandgroup",
+    background:"CEO of Homeland Group alongside MD Abhay Jindal and Strategic Leader Mrinaal Mittal. Office: CP67 Mall, Zone 2, 5th Floor, Sector 67, Mohali. CP67 Mall (delivered), Heights (delivered), Regalia + Global Park (ongoing).",
+    problems:"Homeland Global Park (ultra-luxury mixed-use) needs strong buyer pipeline. Ultra-luxury segment in Mohali is niche — limited qualified buyers.",
+    upcoming:"Homeland Global Park Phase 2 expected 2026. CP67 Mall tenant acquisitions ongoing.",
+    notes:""
+  },
+  {
+    id:13, name:"K.P. Singh", role:"Chairman", company:"DLF Limited", status:"warm", stage:1, contacted:false, priority:7,
+    phone:"+91 92169 26999",
+    email:"N/A – via dlf.in",
+    linkedin_personal:"https://www.linkedin.com/in/kp-singh-dlf/",
+    linkedin_company:"https://www.linkedin.com/company/dlf-limited",
+    instagram:"N/A",
+    background:"Chairman of DLF Ltd (India's largest listed real estate company). Tricity presence: Hyde Park Estate Mullanpur (235.9 acres — plots, floors, villas from ₹80 Lac). DLF Mohali 2/3/4 BHK (RERA: PBRERA-SAS80-PRO845, possession ~2026).",
+    problems:"DLF's Tricity projects compete with local developers on price. Brand premium means slower absorption vs Sushma/Gillco in mid-segment. Delivery timelines for Mohali 2/3/4 BHK under scrutiny.",
+    upcoming:"DLF Mohali possession expected 2026. Hyde Park Estate Phase 3 plots announcement expected.",
+    notes:""
+  },
+  {
+    id:14, name:"Pirojsha Adi Godrej", role:"Executive Chairman", company:"Godrej Properties", status:"warm", stage:1, contacted:false, priority:7,
+    phone:"+91 82878 82878",
+    email:"N/A",
+    linkedin_personal:"https://www.linkedin.com/in/pirojsha-godrej/",
+    linkedin_company:"https://www.linkedin.com/company/godrej-properties",
+    instagram:"N/A",
+    background:"Executive Chairman of Godrej Properties (BSE/NSE listed). Tricity: Godrej Plots Mohali (442 units, 1,200–3,200 sqft, RERA approved, possession Apr 2026). Godrej Eternia Chandigarh (commercial, Phase 1, ready).",
+    problems:"Godrej brand is national — Tricity is not their home market. Channel partner network in Punjab needs strengthening. Plot handovers Apr 2026 under deadline pressure.",
+    upcoming:"Godrej Plots Mohali possession April 2026. Potential new launch in Tricity announced if Mohali plots succeed.",
+    notes:""
+  },
+  {
+    id:15, name:"Pankaj Bajaj", role:"Chairman & MD", company:"Eldeco Group", status:"warm", stage:1, contacted:false, priority:6,
+    phone:"+91 92681 15050",
+    email:"contact@eldecohousing.co.in",
+    linkedin_personal:"https://www.linkedin.com/in/pankaj-bajaj-eldeco/",
+    linkedin_company:"https://www.linkedin.com/company/eldeco-group",
+    instagram:"N/A",
+    background:"CMD of Eldeco Group (est. 1975, Agra). Panchkula project: Eldeco Aranya (NH-07, Panchkula Extension — township plots). Solid mid-segment brand with decades of delivery track record.",
+    problems:"Eldeco is dominant in UP/Rajasthan — Punjab/Chandigarh market is newer for them. Brand awareness lower vs local developers. Need strong local channel partners.",
+    upcoming:"Eldeco Aranya Phase 2 plots expected. Watch for CREDAI Punjab participation.",
+    notes:""
+  },
+  {
+    id:16, name:"Jarnail Singh Bajwa", role:"MD / Co-founder", company:"Bajwa Developers", status:"warm", stage:1, contacted:false, priority:6,
+    phone:"N/A",
+    email:"bajwadevelopers@gmail.com",
+    linkedin_personal:"N/A",
+    linkedin_company:"https://in.linkedin.com/company/bajwa-developers-ltd",
+    instagram:"N/A",
+    background:"Co-founder of Bajwa Developers Ltd (est. 2001). Sunny Enclave Mega Township (2,200–3,500 acres, Kharar, Desu Majra). Registered: SCO 17-18, 5th-6th Floor, Sunny Business Centre, Sector 125, Mohali. 10,000+ residents in township.",
+    problems:"🚨 ACTIVE LEGAL CASE: ED conducted PMLA raids May 21, 2025. Chargesheet filed for Rs. 662.49 CRORE money laundering. Properties attached. Bajwa previously arrested as proclaimed offender. Punjab Vigilance Bureau cases also registered. VERY HIGH RISK — do not enter business dealings without legal counsel.",
+    upcoming:"ED case ongoing. NCLT/court hearings. Avoid recommending Sunny Enclave to clients until legal status clears.",
+    notes:""
+  },
+  {
+    id:17, name:"Getamber Anand", role:"Founder / CMD", company:"ATS Infrastructure", status:"warm", stage:1, contacted:false, priority:6,
+    phone:"+91 78598 85013",
+    email:"N/A",
+    linkedin_personal:"https://www.linkedin.com/in/getamber-anand/",
+    linkedin_company:"https://in.linkedin.com/company/ats-infrastructure-ltd",
+    instagram:"N/A",
+    background:"Founder & CMD of ATS Infrastructure (est. 1998). Corporate: ATS Tower, Plot 16, Sector 135, Noida. Tricity: ATS Casa Espana (3/4 BHK luxury, Chandigarh-Kharar Road Mohali). Partially delivered, resale inventory available.",
+    problems:"ATS is NCR-focused — Mohali project (Casa Espana) is secondary market for them. Resale inventory sitting. Need aggressive channel partner push in Mohali.",
+    upcoming:"No confirmed new Tricity launch. Monitor for Casa Espana resale inventory deals.",
+    notes:""
+  },
+  {
+    id:18, name:"Pradeep Kumar Jain", role:"Founder", company:"Parsvnath Developers", status:"warm", stage:1, contacted:false, priority:5,
+    phone:"+91 11-66290101",
+    email:"info@parsvnath.com",
+    linkedin_personal:"https://www.linkedin.com/in/pradeep-kumar-jain-parsvnath/",
+    linkedin_company:"https://www.linkedin.com/company/parsvnath-developers",
+    instagram:"@parsvnath_ltd",
+    background:"Founder of Parsvnath Developers Ltd. Delhi HQ. Tricity: Parsvnath Prideasia Mohali (ready to move), Parsvnath Royale (Sector 20, Panchkula), Mall Matrix (commercial Mohali). Panchkula: 09876588833.",
+    problems:"Parsvnath brand suffered reputationally from delays in other cities — affects Tricity buyer confidence. Prideasia units ready but slow absorption.",
+    upcoming:"No major new launches confirmed. Royale Panchkula final phases ongoing.",
+    notes:""
+  },
+  {
+    id:19, name:"Satish Kumar", role:"MD", company:"GBP Group", status:"warm", stage:1, contacted:false, priority:6,
+    phone:"N/A – via gbpgroup.in",
+    email:"N/A",
+    linkedin_personal:"N/A",
+    linkedin_company:"https://in.linkedin.com/company/gbp-group",
+    instagram:"N/A",
+    background:"MD of GBP Group (Gupta Builders & Promoters, est. 2009). Office: SCO 64-65, Sector 17A, Chandigarh. 250+ acres across Chandigarh, Panchkula, Mohali, Zirakpur, Dera Bassi. Projects: GBP Camellia (Kharar), GBP Athens (Dera Bassi), GBP Rosewood Estate Phase 2.",
+    problems:"GBP is a mid-scale developer competing in a market with DLF, Godrej, Omaxe. Brand differentiation weak. Multiple projects spread thin.",
+    upcoming:"GBP ECO Greens 2 ongoing. Rosewood Phase 2 plots.",
+    notes:""
+  },
+  {
+    id:20, name:"Ramesh Goyal", role:"Director", company:"KBD Landcorp", status:"warm", stage:1, contacted:false, priority:6,
+    phone:"+91 77430 07141",
+    email:"info@kbdlandcorp.com",
+    linkedin_personal:"N/A",
+    linkedin_company:"https://in.linkedin.com/company/kbd-group-k-b-developers",
+    instagram:"@kbd_landcorp",
+    background:"Director at KBD Landcorp. Office: 117 Plaza, Sector 117, Mohali. Projects: KBD Plaza 117 (3-acre commercial, Airport Rd), KBD Eden Street (Kharar-Kurali Hwy, 144 commercial units), KBD Himalayan City (Kurali — plots & villas, 8 acres).",
+    problems:"Airport road commercial faces competition from established malls. KBD is small-scale — needs strong tenant/buyer network for SCO units.",
+    upcoming:"KBD Himalayan City Kurali launch ongoing. Eden Street final commercial units.",
+    notes:""
+  },
+  {
+    id:21, name:"Sushil Ansal", role:"Chairman", company:"Ansal API", status:"cold", stage:1, contacted:false, priority:2,
+    phone:"+91 11-23353550",
+    email:"corporate@ansalapi.com",
+    linkedin_personal:"N/A",
+    linkedin_company:"https://www.linkedin.com/company/ansal-api",
+    instagram:"@ansal.api",
+    background:"Chairman of Ansal Properties & Infrastructure Ltd (est. 1967). Tricity: Golflink-2 Mohali. Company under CIRP (Corporate Insolvency Resolution Process).",
+    problems:"⚠️ CRITICAL RISK: Company under insolvency (CIRP). CIRP email: cirpofapil@minervaresolutions.com. Do NOT advise clients to invest until resolved. Legal proceedings ongoing.",
+    upcoming:"CIRP resolution process — watch for NCLT orders.",
+    notes:""
+  },
+  {
+    id:22, name:"Lalit Goyal", role:"MD / Founder", company:"Ireo Group", status:"cold", stage:1, contacted:false, priority:1,
+    phone:"N/A",
+    email:"N/A",
+    linkedin_personal:"N/A",
+    linkedin_company:"https://in.linkedin.com/company/ireo-management-pvt--ltd-",
+    instagram:"N/A",
+    background:"Founder of Ireo Group. Grand Hyatt Residency (Sector 58, Chandigarh) — collected ₹400 Cr from ~70 allottees.",
+    problems:"🚨 CRITICAL: MD arrested by ED in 2021 (judge bribery + money laundering). Pandora Papers link. Supreme Court proceedings ongoing. Project completely stalled. DO NOT ENGAGE.",
+    upcoming:"SC proceedings ongoing. Monitor for resolution order.",
+    notes:""
+  },
+  {
+    id:23, name:"Parvinder Singh", role:"CEO North", company:"Trident Realty", status:"hot", stage:1, contacted:false, priority:8,
+    phone:"+91 90236 36000",
+    email:"info@tridenthillspanchkula.net",
+    linkedin_personal:"https://www.linkedin.com/in/parrysingh/",
+    linkedin_company:"https://in.linkedin.com/company/tridentrealty",
+    instagram:"N/A",
+    background:"CEO North at Trident Realty (16+ years experience). Day-to-day operations head for Trident Hills township. Personal website of Chairman SK Narvar: sknarvar.com. Parvinder is the more accessible contact vs Chairman for business partnerships.",
+    problems:"Trident Hills 200-acre township needs consistent channel partner pipeline for 7-8 year phased absorption. Premium Panchkula foothills positioning means smaller qualified buyer pool than Mohali.",
+    upcoming:"Trident Hills Phase 2 villa launch 2026. Likely attending Mohali Realty Summit May 2026.",
+    notes:""
+  },
+  {
+    id:24, name:"Umang Jindal", role:"CEO", company:"Homeland Group", status:"warm", stage:1, contacted:false, priority:7,
+    phone:"N/A – via homelandgroup.org",
+    email:"N/A",
+    linkedin_personal:"https://www.linkedin.com/in/umang-jindal-a615a822b/",
+    linkedin_company:"https://in.linkedin.com/company/homelandgroup",
+    instagram:"@homelandgroup",
+    background:"CEO of Homeland Group. Appointed Chairman of Punjab's Retail Sector Committee by Punjab Govt — high political connections. ET Edge North India 40 Under 40 recognition for MD Abhay Jindal. Office: CP67 Mall, Zone 2, 5th Floor, Sector 67, Mohali.",
+    problems:"Homeland Global Park (ultra-luxury mixed-use) needs high-ticket buyer pipeline. Ultra-luxury segment in Mohali is niche — fewer than 200 qualified buyers per year.",
+    upcoming:"Homeland Global Park Phase 2 expected 2026. CP67 Mall tenant acquisitions. Punjab retail sector committee events accessible through Umang Jindal.",
+    notes:""
+  },
+];
+
+// ═══════════════════════════════════════════════
+// PROJECTS DATA
+// ═══════════════════════════════════════════════
+let projects = [
+  { id:1,  name:"Omaxe New Chandigarh (Mullanpur)",    dev:"Omaxe Ltd",           loc:"New Chandigarh, Mullanpur",      status:"running",  priority:"P1", total:5000, sold:3200, completion:"Phased 2026-27",   type:"Mixed",       notes:"1,000-acre master-planned township. 4,500+ families residing. Flats, villas, penthouses, India Trade Tower. Highly active demand." },
+  { id:2,  name:"JLPL Falcon View",                    dev:"JLPL Group",          loc:"Sector 66A, Mohali",             status:"closing",  priority:"P1", total:800,  sold:692,  completion:"Delivered",        type:"Residential", notes:"Luxury towers delivered. ~108 unsold units on upper floors. Strong negotiation leverage." },
+  { id:3,  name:"JLPL Mega Township",                  dev:"JLPL Group",          loc:"Sectors 90/91/94, SAS Nagar",   status:"running",  priority:"P1", total:3000, sold:1600, completion:"Phased 2025-27",  type:"Mixed",       notes:"401-acre township + 511-acre Industrial Park (Sectors 66A, 82, 83). Large scale ongoing." },
+  { id:4,  name:"Bestech Park View Grand Spa",         dev:"Bestech Group",       loc:"Sector 66, Mohali",             status:"unsold",   priority:"P1", total:1200, sold:600,  completion:"Q2 2025",         type:"Residential", notes:"50% unsold inventory — stalled delivery. Major opportunity for bulk deal or channel partnership." },
+  { id:5,  name:"Wave Estate",                         dev:"Wave Infratech",      loc:"Sectors 85 & 99, Mohali",       status:"unsold",   priority:"P1", total:2500, sold:900,  completion:"Stalled",         type:"Mixed",       notes:"246-acre gated community. ~1,600 units unsold. Group under financial stress. Approach cautiously but high opportunity." },
+  { id:6,  name:"Sushma Joynest ZRK 1",               dev:"Sushma Buildtech",    loc:"Zirakpur",                      status:"closing",  priority:"P1", total:400,  sold:378,  completion:"Ready to Move",   type:"Residential", notes:"Ready to move. Final 22 units available." },
+  { id:7,  name:"Sushma Grande NXT",                   dev:"Sushma Buildtech",    loc:"Zirakpur, SAS Nagar",           status:"running",  priority:"P1", total:600,  sold:480,  completion:"2025",            type:"Residential", notes:"Ongoing flagship. High absorption rate." },
+  { id:8,  name:"Sushma Atlantis",                     dev:"Sushma Buildtech",    loc:"Zirakpur",                      status:"running",  priority:"P1", total:700,  sold:560,  completion:"Jun 2026",        type:"Residential", notes:"High-rise 2 & 3 BHK. Strong demand corridor." },
+  { id:9,  name:"DLF Hyde Park Estate",                dev:"DLF Limited",         loc:"New Chandigarh, Mullanpur",     status:"running",  priority:"P1", total:2000, sold:1200, completion:"Phased 2025-26",  type:"Mixed",       notes:"235.9 acres. Plots, floors, villas from ₹80 Lac. DLF Mohali (RERA: PBRERA-SAS80-PRO845) possession ~2026." },
+  { id:10, name:"Trident Hills Township",              dev:"Trident Realty",      loc:"Sector 4, Panchkula Extn.",     status:"running",  priority:"P1", total:1500, sold:700,  completion:"Phased 2026-28",  type:"Mixed",       notes:"200-acre luxury township. ₹3,000 Cr investment. Plots, flats, villas. Actively selling." },
+  { id:11, name:"El Spazia (your 'Elspasia')",          dev:"Allwin Infrastructure",loc:"Airport Road, Gazipur, Zirakpur",status:"closing",  priority:"P1", total:252,  sold:220,  completion:"Ready to Move",   type:"Residential", notes:"VERIFIED: 252 units, 5 towers G+15. 3 BHK, 3+1 BHK, Duplex, Duplex Penthouse. Price: ₹1.05–3.68 Cr. RERA: PBRERA-SAS79-PR0526. Allwin Infra (35+ yrs). Families already residing. elspazia.in" },
+  { id:11.1, name:"Sushma Joynest MOH 1",              dev:"Sushma Buildtech",    loc:"PR-7 Airport Road, Zirakpur",   status:"running",  priority:"P1", total:968,  sold:750,  completion:"Ready/Near-Ready", type:"Residential", notes:"968 units, 13 towers G+10. 2/3 BHK from ~₹45-48L. Large township on PR-7 belt. RERA registered. High absorption." },
+  { id:11.2, name:"Maxxus Elanza",                     dev:"DS Max Properties",   loc:"PR-7, Airport Ring Road, Zirakpur",status:"running", priority:"P2", total:268,  sold:180,  completion:"2025-26",         type:"Residential", notes:"268 units, 6.5 acres. 3 BHK flats + independent floors (1,555–1,705 sqft). ₹66-70L. RERA: PBRERA-SAS79-PR0649. Near Shemrock School." },
+  { id:12, name:"Gillco Parkhills",                    dev:"Gillco Group",        loc:"Sector 126, Mohali",            status:"closing",  priority:"P2", total:350,  sold:300,  completion:"Delivered",       type:"Residential", notes:"19-storey luxury. Delivered. Resale inventory on upper floors available." },
+  { id:13, name:"Godrej Plots Mohali",                 dev:"Godrej Properties",   loc:"Mohali (Kharar Road)",          status:"running",  priority:"P2", total:442,  sold:280,  completion:"Apr 2026",        type:"Residential", notes:"442 plots (1,200–3,200 sqft). RERA approved. Possession April 2026." },
+  { id:14, name:"Eldeco Aranya",                       dev:"Eldeco Group",        loc:"NH-07, Panchkula Extension",   status:"running",  priority:"P2", total:800,  sold:480,  completion:"Phased 2025-26",  type:"Residential", notes:"Township plots. Panchkula Extension corridor growing fast." },
+  { id:15, name:"Homeland Global Park",                dev:"Homeland Group",      loc:"Sector 67, Mohali",             status:"running",  priority:"P2", total:300,  sold:180,  completion:"2026",            type:"Mixed",       notes:"Ultra-luxury mixed-use: mall + business suites + serviced residences." },
+  { id:16, name:"Motia Chandigarh Hills",              dev:"Motia Group",         loc:"Dera Bassi",                    status:"closing",  priority:"P2", total:450,  sold:390,  completion:"Sep 2025",        type:"Residential", notes:"Possession Sep 2025. Final units available." },
+  { id:17, name:"Motia Aerogreens",                    dev:"Motia Group",         loc:"Aerocity, Mohali",              status:"upcoming", priority:"P2", total:300,  sold:80,   completion:"2027",            type:"Residential", notes:"Near airport. Plots. Active launch phase." },
+  { id:18, name:"ATS Casa Espana",                     dev:"ATS Infrastructure",  loc:"Chandigarh-Kharar Road, Mohali",status:"closing",  priority:"P2", total:600,  sold:520,  completion:"Partially Delivered",type:"Residential",notes:"3/4 BHK luxury. Resale inventory available for negotiation." },
+  { id:19, name:"Parsvnath Prideasia",                 dev:"Parsvnath Developers",loc:"Mohali",                        status:"closing",  priority:"P2", total:500,  sold:460,  completion:"Ready to Move",   type:"Residential", notes:"Ready-to-move. Royale (Panchkula) and Mall Matrix also active." },
+  { id:20, name:"GBP Camellia",                        dev:"GBP Group",           loc:"Kharar, Mohali",                status:"running",  priority:"P3", total:350,  sold:240,  completion:"2026",            type:"Residential", notes:"Mid-segment. Part of 250+ acre GBP portfolio." },
+  { id:21, name:"KBD Himalayan City",                  dev:"KBD Landcorp",        loc:"Kurali, Ropar Highway",         status:"upcoming", priority:"P3", total:200,  sold:40,   completion:"2027",            type:"Residential", notes:"Plots & villas near Kurali. 8-acre project." },
+  { id:22, name:"Sunny Enclave Phase V",               dev:"Bajwa Developers",    loc:"Kharar, Desu Majra",            status:"running",  priority:"P3", total:2000, sold:1400, completion:"Ongoing",         type:"Residential", notes:"Mega township. Sector 125 plots booking open." },
+  { id:23, name:"Ansal API Golflink-2",                dev:"Ansal API",           loc:"Mohali",                        status:"unsold",   priority:"P4", total:400,  sold:200,  completion:"Stalled",         type:"Mixed",       notes:"⚠️ CIRP / Insolvency. Do not recommend to clients." },
+  { id:24, name:"Ireo Grand Hyatt Residency",          dev:"Ireo Group",          loc:"Sector 58, Chandigarh",         status:"unsold",   priority:"P4", total:200,  sold:80,   completion:"Stalled – Legal", type:"Residential", notes:"🚨 HIGH RISK. ED case, MD arrested. Completely stalled." },
+];
+
+// ═══════════════════════════════════════════════
+// EVENTS DATA
+// ═══════════════════════════════════════════════
+let events = [
+  { id:1, name:"Tribune Real Estate Expo — 8th Edition", date:"2026-02-20", loc:"Sector 34 Exhibition Ground, Chandigarh", type:"Expo", devs:"Omaxe, JLPL, El Spazia (Allwin), Escon Primera, Royale Estate, NK Sharma Group + 15 more", notes:"VERIFIED EVENT. Feb 20-22, 2026. Inaugurated by Punjab Housing Minister Hardeep Singh Mundian. SBI, IDBI, Indian Bank on-site for home loans. All RERA-approved projects. This is THE best event to meet developers and buyers. Attend all 3 days." },
+  { id:2, name:"Dubai Property Expo — Chandigarh", date:"2026-03-31", loc:"Novotel Chandigarh, Tribune Chowk", type:"Expo", devs:"Dubai developers + NRI-focused Tricity developers", notes:"VERIFIED: March 31, 2026. NRI investment showcase for Tricity buyers. Ideal to meet developers targeting NRI segment — DLF, Godrej, Gillco, Trident Hills." },
+  { id:3, name:"Godrej Plots Mohali — Possession Drive", date:"2026-04-01", loc:"Mohali, Kharar Road", type:"Launch", devs:"Godrej Properties", notes:"RERA-deadline: April 2026. 442 plot handovers. Godrej senior team will be present. Identify their Tricity channel partner network. Meet Pirojsha Godrej team directly." },
+  { id:4, name:"Tribune Real Estate Expo — 9th Edition", date:"2027-02-01", loc:"Sector 34 Exhibition Ground, Chandigarh", type:"Expo", devs:"All major Tricity developers", notes:"Expected Feb 2027 based on annual pattern. The Tribune RE Expo is held every year (2019, 2020, 2023, 2024, 2025, 2026 confirmed). Plan 6 months ahead to secure speaker/partner slot." },
+  { id:5, name:"Trident Hills Villa Launch — Phase 2", date:"2026-07-10", loc:"Trident Hills, Sector 4, Panchkula", type:"Launch", devs:"Trident Realty", notes:"Phase 2 villa launch. SK Narvar (Chairman) + Parvinder Singh (CEO, linkedin.com/in/parrysingh) will host. Invite-only — get on list through referral or contact tridentrealty.co.in." },
+  { id:6, name:"RERA Punjab Builder Compliance Meet", date:"2026-04-28", loc:"RERA Punjab Office, Mohali", type:"RERA", devs:"All RERA registered builders", notes:"Quarterly RERA-developer dialogue. Watch RERA Punjab (rera.punjab.gov.in) for announcements. Critical for monitoring Bestech, Wave, Parsvnath compliance status." },
+  { id:7, name:"Mohali Realty & Investment Summit", date:"2026-05-20", loc:"Hyatt Regency, Chandigarh", type:"Conference", devs:"DLF, Godrej, Trident, Homeland, Sushma", notes:"Senior leadership + institutional investors. Panels on unsold inventory crisis and market absorption. Attend as channel partner / service provider. Homeland Group CEO Umang Jindal likely to attend." },
+  { id:8, name:"NRI Investment Conclave Punjab", date:"2026-09-15", loc:"Le Meridien, Chandigarh", type:"Conference", devs:"Omaxe, DLF, Gillco, Sushma, Trident, Motia Aerogreens", notes:"Targeting NRI buyers from UK, Canada, US, UAE. Developers actively seeking NRI channel partners. Best time to pitch NRI-segment services to Gillco, Trident, Motia Aerogreens teams." },
+  { id:9, name:"NAREDCO North — Punjab Chapter Event", date:"2026-06-01", loc:"TBD — check naredco.in/events", type:"Networking", devs:"Multiple", notes:"Check naredco.in/events for confirmed dates. NAREDCO North is a key networking body for Delhi-Punjab RE corridor. Good for meeting ATS, DLF, Godrej channel heads." },
+];
+
+// ═══════════════════════════════════════════════
+// REAL-TIME SYNC (Gun.js) + localStorage fallback
+// ═══════════════════════════════════════════════
+const STORAGE_KEY = 'recrm_v1';
+const GUN_KEY     = 'recrm-leogen-2025-v1'; // unique namespace
+
+let _gun = null;
+let _syncStore = null;
+let _syncBusy  = false; // prevent echo loop
+
+function initSync(){
+  try {
+    _gun = GUN(['https://gun-manhattan.herokuapp.com/gun','https://gun-us.herokuapp.com/gun']);
+    _syncStore = _gun.get(GUN_KEY);
+
+    _syncStore.on(raw => {
+      if(!raw || !raw.data || _syncBusy) return;
+      try {
+        const d = JSON.parse(raw.data);
+        if(!d || !d.leads) return;
+        // Only apply if newer than what we have
+        if(d.ts && d.ts <= (window._lastPushTs||0)) return;
+        leads    = d.leads;
+        projects = d.projects || projects;
+        events   = d.events   || events;
+        notes    = d.notes    || notes;
+        // Also write to localStorage as cache
+        localStorage.setItem(STORAGE_KEY, raw.data);
+        // Refresh UI if logged in
+        if(document.getElementById('crm-app').style.display !== 'none'){
+          const active = document.querySelector('.section.active');
+          if(active) render(active.id.replace('sec-',''));
+          showToast('↻ Synced', '#22c55e');
+        }
+      } catch(e){}
+    });
+
+    setSyncStatus('online');
+  } catch(e){
+    setSyncStatus('offline');
+  }
+}
+
+function persist(){
+  const payload = JSON.stringify({ leads, projects, events, notes, ts: Date.now() });
+  // Always save locally first (instant)
+  try { localStorage.setItem(STORAGE_KEY, payload); } catch(e){}
+  // Push to Gun (cross-device)
+  if(_syncStore){
+    _syncBusy = true;
+    window._lastPushTs = Date.now();
+    _syncStore.put({ data: payload }, () => { _syncBusy = false; });
+  }
+}
+
+function loadFromStorage(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    if(d.leads   && d.leads.length)    leads    = d.leads;
+    if(d.projects&& d.projects.length) projects = d.projects;
+    if(d.events  && d.events.length)   events   = d.events;
+    if(d.notes)                        notes    = d.notes;
+  } catch(e) {}
+}
+
+function setSyncStatus(s){
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  el.textContent = s === 'online' ? '● Sync On' : '○ Offline';
+  el.style.color  = s === 'online' ? '#4ade80'  : '#f87171';
+}
+
+let notes = [];
+loadFromStorage();
+
+let editingLeadId = null;
+let editingProjectId = null;
+let viewingLeadId = null;
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+const TITLES = {dashboard:'Dashboard',pipeline:'Sales Pipeline',leads:'Founders & Leads',projects:'Projects',inventory:'Inventory',events:'Upcoming Events',notes:'Notes'};
+const BTN_LABELS = {dashboard:'+ Add Lead',pipeline:'',leads:'+ Add Lead',projects:'+ Add Project',inventory:'',events:'+ Add Event',notes:'+ Add Note'};
+const BTN_FNS = {dashboard:openAddLeadModal,pipeline:null,leads:openAddLeadModal,projects:openAddProjectModal,inventory:null,events:openAddEventModal,notes:openAddNoteModal};
+
+function show(name){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  document.getElementById('page-title').textContent = TITLES[name]||name;
+  const btn = document.getElementById('hdr-btn');
+  if(BTN_LABELS[name]){btn.textContent=BTN_LABELS[name];btn.style.display='';btn.onclick=BTN_FNS[name];}
+  else btn.style.display='none';
+  render(name);
+}
+
+function render(n){
+  if(n==='dashboard')renderDash();
+  if(n==='pipeline')renderPipeline();
+  if(n==='leads')renderLeads();
+  if(n==='projects')renderProjects();
+  if(n==='inventory')renderInventory();
+  if(n==='events')renderEvents();
+  if(n==='notes')renderNotes();
+}
+
+// ═══════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════
+function renderDash(){
+  document.getElementById('st-total').textContent=leads.length;
+  document.getElementById('st-hot').textContent=leads.filter(l=>l.status==='hot').length;
+  document.getElementById('st-unsold').textContent=projects.reduce((a,p)=>a+(p.total-p.sold),0).toLocaleString();
+  document.getElementById('st-pipe').textContent=leads.filter(l=>l.stage>1&&l.stage<8).length;
+  document.getElementById('pipe-badge').textContent=leads.filter(l=>l.stage>1&&l.stage<8).length;
+  document.getElementById('events-count').textContent=events.length;
+
+  // Category breakdown
+  const cats=['Developer','Realtor','Broker','Channel Partner','Investor','Govt / RERA','Other'];
+  const catCounts=cats.map(c=>({cat:c,count:leads.filter(l=>(l.category||'Developer')===c).length})).filter(x=>x.count>0);
+  document.getElementById('st-cat-grid').innerHTML=catCounts.map(x=>`
+    <div style="display:flex;align-items:center;gap:8px;background:#0b0d14;border:1px solid #1e2235;border-radius:8px;padding:8px 12px;cursor:pointer;" onclick="document.getElementById('lead-filter-category').value='${x.cat}';show('leads');">
+      ${catBadge(x.cat)}
+      <span style="font-size:16px;font-weight:800;color:#fff;">${x.count}</span>
+    </div>`).join('');
+
+  // Priority projects table
+  const sorted=[...projects].sort((a,b)=>a.priority.localeCompare(b.priority)).slice(0,8);
+  document.getElementById('dash-proj-tbody').innerHTML=sorted.map(p=>`
+    <tr style="border-bottom:1px solid #1e2235;cursor:pointer;" onclick="show('projects')">
+      <td style="padding:6px 8px;"><span class="ptag ${p.priority.toLowerCase()}">${p.priority}</span></td>
+      <td style="padding:6px 8px;font-size:11px;color:#fff;font-weight:600;">${p.name}</td>
+      <td style="padding:6px 8px;">${statusBadge(p.status)}</td>
+      <td style="padding:6px 8px;font-size:11px;font-weight:700;color:${(p.total-p.sold)>200?'#f87171':'#94a3b8'}">${(p.total-p.sold).toLocaleString()}</td>
+    </tr>`).join('');
+
+  // Hot leads
+  const hotLeads=leads.filter(l=>l.status==='hot').slice(0,4);
+  document.getElementById('dash-leads-grid').innerHTML=hotLeads.map(l=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px;border:1px solid #1e2235;border-radius:8px;cursor:pointer;" onclick="viewLead(${l.id})">
+      <div style="width:32px;height:32px;border-radius:50%;background:#6366f133;color:#818cf8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">${l.name[0]}</div>
+      <div style="flex:1;min-width:0;">
+        <p style="font-size:12px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${l.name}</p>
+        <p style="font-size:10px;color:#475569;">${l.role} · ${l.company}</p>
+      </div>
+      <div>
+        <span class="pipe-stage ${STAGES[l.stage-1].cls}">${STAGES[l.stage-1].emoji} ${l.stage}</span>
+      </div>
+    </div>`).join('');
+
+  // Upcoming events
+  const upcoming=[...events].sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,3);
+  document.getElementById('dash-events').innerHTML=upcoming.map(ev=>eventCard(ev,true)).join('');
+}
+
+// ═══════════════════════════════════════════════
+// PIPELINE (Kanban) — simplified stages
+// ═══════════════════════════════════════════════
+let _dragId = null;
+let _fuLeadId = null; // current lead in FU modal
+
+// Follow-up view index per lead (which FU number is displayed on card)
+const fuViewIdx = {}; // leadId → index into followups array
+
+function renderPipeline(){
+  const filterCat = document.getElementById('pipe-filter-category').value;
+  let filtered = leads;
+  if(filterCat) filtered = filtered.filter(l=>(l.category||'Developer')===filterCat);
+
+  renderHotBar();
+
+  const board = document.getElementById('pipe-board');
+  board.innerHTML = STAGES.map(s=>{
+    const col = filtered.filter(l=>l.stage===s.id);
+    const isFollowUp = s.id === 4;
+    const dropColor = isFollowUp ? '#f59e0b' : '#6366f1';
+    return `<div class="kanban-col" id="col-${s.id}"
+      ondragover="event.preventDefault();document.getElementById('col-${s.id}').style.borderColor='${dropColor}';document.getElementById('col-${s.id}').style.background='${dropColor}11';"
+      ondragleave="document.getElementById('col-${s.id}').style.borderColor='#1e2235';document.getElementById('col-${s.id}').style.background='';"
+      ondrop="dropLead(event,${s.id})">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <p style="font-size:10px;font-weight:700;color:${isFollowUp?'#f59e0b':'#fff'};">${s.emoji} ${s.name}</p>
+        <span style="background:#1e2235;color:#64748b;font-size:9px;font-weight:700;padding:1px 5px;border-radius:999px;">${col.length}</span>
+      </div>
+      ${col.map(l => isFollowUp ? renderFuCard(l) : renderStdCard(l)).join('')}
+      <div class="drop-hint" id="hint-${s.id}" style="display:none;border:1.5px dashed ${dropColor};border-radius:8px;padding:12px 8px;text-align:center;font-size:10px;color:${dropColor};margin-top:4px;">Drop here</div>
+      ${col.length===0?`<p class="empty-col-text" style="font-size:10px;color:#334155;text-align:center;padding:12px 0;">Empty</p>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderStdCard(l){
+  return `<div class="kanban-card"
+    draggable="true" id="kcard-${l.id}"
+    ondragstart="dragStart(event,${l.id})"
+    ondragend="dragEnd(event)"
+    onclick="viewLead(${l.id})">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <p style="font-size:11px;font-weight:600;color:#fff;line-height:1.2;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.name}</p>
+      <svg style="width:9px;height:9px;color:#334155;flex-shrink:0;cursor:grab;margin-left:4px;" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm6 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM7 8a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm6 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-6 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm6 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
+    </div>
+    <p style="font-size:10px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${l.company}</p>
+    <div style="margin-top:5px;">
+      <span class="cat-grey">${l.category||'Developer'}</span>
+    </div>
+  </div>`;
+}
+
+function renderFuCard(l){
+  const fus = l.followups||[];
+  const idx = Math.min(fuViewIdx[l.id]??fus.length-1, fus.length-1);
+  const fu = fus[idx] || null;
+  const fuNum = fu ? fu.num : 0;
+  const fuNote = fu ? (fu.note||'').slice(0,60) : '—';
+  const fuDate = fu ? fu.scheduledDate : '';
+  const today = new Date().toISOString().slice(0,10);
+  let dateClass = 'upcoming', dateLabel = fuDate ? `📅 ${fuDate}` : 'No date set';
+  if(fuDate){
+    if(fuDate < today){ dateClass='overdue'; dateLabel=`⚠ Overdue · ${fuDate}`; }
+    else if(fuDate===today){ dateClass='due-today'; dateLabel=`🔔 Due Today`; }
+  }
+  return `<div class="kanban-card fu-card"
+    draggable="true" id="kcard-${l.id}"
+    ondragstart="dragStart(event,${l.id})"
+    ondragend="dragEnd(event)"
+    onclick="openFuModal(${l.id})">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+      <p style="font-size:11px;font-weight:600;color:#fff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.name}</p>
+      <div style="display:flex;align-items:center;gap:2px;flex-shrink:0;margin-left:4px;">
+        ${fus.length>1?`<button class="fu-nav" onclick="event.stopPropagation();shiftFuView(${l.id},-1)">◀</button>`:''}
+        <span class="fu-badge">FU #${fuNum||'—'}</span>
+        ${fus.length>1?`<button class="fu-nav" onclick="event.stopPropagation();shiftFuView(${l.id},+1)">▶</button>`:''}
+      </div>
+    </div>
+    <p style="font-size:10px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${l.company}</p>
+    <div style="margin-top:4px;"><span class="cat-grey">${l.category||'Developer'}</span></div>
+    ${fu?`<p class="fu-note-text">${fuNote}${fu.note&&fu.note.length>60?'…':''}</p>
+    <p class="fu-date-text ${dateClass}">${dateLabel}</p>`
+    :`<p style="font-size:10px;color:#334155;margin-top:5px;font-style:italic;">No follow-up logged yet</p>`}
+  </div>`;
+}
+
+function shiftFuView(leadId, dir){
+  const l = leads.find(x=>x.id===leadId);
+  if(!l||!l.followups||!l.followups.length) return;
+  const cur = fuViewIdx[leadId]??l.followups.length-1;
+  fuViewIdx[leadId] = Math.max(0, Math.min(l.followups.length-1, cur+dir));
+  renderPipeline();
+}
+
+function renderHotBar(){
+  const today = new Date().toISOString().slice(0,10);
+  const hotItems = [];
+  leads.forEach(l=>{
+    if(l.stage!==4) return;
+    (l.followups||[]).forEach(fu=>{
+      if(fu.doneDate) return; // already done
+      if(!fu.scheduledDate || fu.scheduledDate > today) return; // future
+      hotItems.push({lead:l, fu});
+    });
+  });
+  const bar = document.getElementById('hot-bar');
+  const itemsDiv = document.getElementById('hot-items');
+  if(!hotItems.length){ bar.style.display='none'; return; }
+  bar.style.display='flex';
+  hotItems.sort((a,b)=>a.fu.scheduledDate.localeCompare(b.fu.scheduledDate));
+  const today2 = new Date().toISOString().slice(0,10);
+  itemsDiv.innerHTML = hotItems.map(({lead,fu})=>{
+    const isOverdue = fu.scheduledDate < today2;
+    const label = isOverdue ? `Overdue ${Math.ceil((new Date(today2)-new Date(fu.scheduledDate))/(86400000))}d` : 'Today';
+    return `<div class="hot-item${isOverdue?' overdue':''}" onclick="openFuModal(${lead.id})">
+      <div style="display:flex;align-items:center;">
+        <span class="hi-name">${lead.name}</span>
+        <span class="hi-fu${isOverdue?' overdue':''}">FU #${fu.num}</span>
+      </div>
+      <p class="hi-note">${fu.note||'(no note)'}</p>
+      <p class="hi-date">${label} · ${fu.scheduledDate}</p>
+    </div>`;
+  }).join('');
+}
+
+function dragStart(e, id){
+  _dragId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', id);
+  requestAnimationFrame(()=>{
+    const el = document.getElementById('kcard-'+id);
+    if(el){ el.style.opacity='0.4'; el.style.transform='rotate(2deg) scale(0.97)'; }
+  });
+  document.querySelectorAll('.drop-hint').forEach(h=>h.style.display='block');
+  document.querySelectorAll('.empty-col-text').forEach(h=>h.style.display='none');
+}
+
+function dragEnd(e){
+  const el = document.getElementById('kcard-'+_dragId);
+  if(el){ el.style.opacity=''; el.style.transform=''; }
+  STAGES.forEach(s=>{
+    const col = document.getElementById('col-'+s.id);
+    if(col){ col.style.borderColor=''; col.style.background=''; }
+  });
+  document.querySelectorAll('.drop-hint').forEach(h=>h.style.display='none');
+}
+
+function dropLead(e, stageId){
+  e.preventDefault();
+  const id = parseInt(e.dataTransfer.getData('text/plain') || _dragId);
+  const lead = leads.find(l=>l.id===id);
+  if(!lead || lead.stage===stageId) return;
+
+  lead.stage = stageId;
+  if(stageId >= 2 && !lead.contacted) lead.contacted = true;
+
+  const col = document.getElementById('col-'+stageId);
+  if(col){ col.style.borderColor=''; col.style.background=''; }
+
+  persist();
+
+  // If dropped into Follow Up → open FU modal to log this touch
+  if(stageId === 4){
+    if(!lead.followups) lead.followups = [];
+    renderPipeline();
+    openFuModal(id);
+    return;
+  }
+
+  showToast(`${lead.name} → ${STAGES[stageId-1].emoji} ${STAGES[stageId-1].name}`, '#6366f1');
+  renderPipeline();
+  document.getElementById('pipe-badge').textContent = leads.filter(l=>l.stage>1&&l.stage<7).length;
+}
+
+function showToast(msg, color='#6366f1'){
+  let t = document.getElementById('toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id='toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;font-size:12px;font-weight:600;color:#fff;z-index:999;transition:opacity .3s;pointer-events:none;white-space:nowrap;';
+    document.body.appendChild(t);
+  }
+  t.style.background=color;
+  t.textContent=msg;
+  t.style.opacity='1';
+  clearTimeout(t._timeout);
+  t._timeout=setTimeout(()=>t.style.opacity='0',2500);
+}
+
+// ═══════════════════════════════════════════════
+// FOLLOW-UP MANAGEMENT
+// ═══════════════════════════════════════════════
+function openFuModal(leadId){
+  _fuLeadId = leadId;
+  const l = leads.find(x=>x.id===leadId); if(!l) return;
+  if(!l.followups) l.followups = [];
+
+  document.getElementById('fu-modal-name').textContent = l.name;
+  document.getElementById('fu-modal-company').textContent = `${l.role} · ${l.company}`;
+
+  // Set default date to today
+  document.getElementById('fu-date-input').value = new Date().toISOString().slice(0,10);
+  document.getElementById('fu-note-input').value = '';
+
+  // Next FU number
+  const nextNum = (l.followups.length > 0 ? l.followups[l.followups.length-1].num : 0) + 1;
+  document.getElementById('fu-add-label').textContent = `Log Follow-Up #${nextNum}`;
+
+  renderFuTimeline(l);
+  document.getElementById('modal-fu').style.display='flex';
+}
+
+function renderFuTimeline(l){
+  const fus = l.followups||[];
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('fu-timeline').innerHTML = fus.length === 0
+    ? `<p style="font-size:11px;color:#334155;text-align:center;padding:10px 0;">No follow-ups logged yet.</p>`
+    : [...fus].reverse().map(fu=>{
+        const isDone = !!fu.doneDate;
+        const isOverdue = !isDone && fu.scheduledDate && fu.scheduledDate < today;
+        const dateColor = isDone ? '#4ade80' : isOverdue ? '#f87171' : '#60a5fa';
+        const isEditing = fu._editing;
+
+        if(isEditing){
+          return `<div class="fu-entry" style="border-color:#6366f166;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+              <span class="fu-badge" style="background:#1e2235;color:#818cf8;border-color:#2d2d4e;">FU #${fu.num}</span>
+              <span style="font-size:10px;color:#6366f1;font-weight:600;">Editing</span>
+            </div>
+            <textarea id="fu-edit-note-${fu.num}" class="input" style="height:52px;resize:none;font-size:11px;margin-bottom:6px;">${fu.note||''}</textarea>
+            <input id="fu-edit-date-${fu.num}" class="input" type="date" value="${fu.scheduledDate||''}" style="font-size:11px;margin-bottom:8px;"/>
+            <div style="display:flex;gap:6px;justify-content:flex-end;">
+              <button onclick="cancelFuEdit(${l.id},${fu.num})" style="font-size:10px;background:transparent;color:#64748b;border:1px solid #1e2235;border-radius:5px;padding:3px 10px;cursor:pointer;">Cancel</button>
+              <button onclick="saveFuEdit(${l.id},${fu.num})" style="font-size:10px;background:#6366f1;color:#fff;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-weight:700;">Save</button>
+            </div>
+          </div>`;
+        }
+
+        return `<div class="fu-entry${isDone?' done':''}">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="fu-badge" style="${isDone?'background:#14532d44;color:#4ade80;border-color:#166834':''}">FU #${fu.num}</span>
+              <span style="font-size:9px;color:${dateColor};">
+                ${isDone?`✓ Done ${fu.doneDate}`:isOverdue?`⚠ Overdue · ${fu.scheduledDate}`:`📅 ${fu.scheduledDate||'No date'}`}
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              ${!isDone?`<button title="Mark done" onclick="markFuDone(${l.id},${fu.num})" style="font-size:9px;background:#14532d44;color:#4ade80;border:1px solid #16683444;border-radius:4px;padding:2px 8px;cursor:pointer;font-weight:700;">✓</button>`:''}
+              <button title="Edit" onclick="startFuEdit(${l.id},${fu.num})" style="font-size:10px;background:#1e2235;color:#64748b;border:1px solid #2d3748;border-radius:4px;padding:2px 7px;cursor:pointer;line-height:1;">✎</button>
+              <button title="Delete" onclick="deleteFuEntry(${l.id},${fu.num})" style="font-size:11px;background:#7f1d1d22;color:#f87171;border:1px solid #991b1b33;border-radius:4px;padding:1px 7px;cursor:pointer;line-height:1;font-weight:700;">×</button>
+            </div>
+          </div>
+          <p style="font-size:11px;color:${isDone?'#475569':'#94a3b8'};line-height:1.55;">${fu.note||'<span style="color:#334155;font-style:italic;">No note</span>'}</p>
+        </div>`;
+      }).join('');
+}
+
+function saveFuEntry(){
+  const l = leads.find(x=>x.id===_fuLeadId); if(!l) return;
+  if(!l.followups) l.followups = [];
+  const note = document.getElementById('fu-note-input').value.trim();
+  const date = document.getElementById('fu-date-input').value;
+  const nextNum = (l.followups.length > 0 ? l.followups[l.followups.length-1].num : 0) + 1;
+  l.followups.push({ num: nextNum, note, scheduledDate: date, doneDate: null });
+  fuViewIdx[_fuLeadId] = l.followups.length - 1;
+  document.getElementById('fu-note-input').value = '';
+  document.getElementById('fu-date-input').value = new Date().toISOString().slice(0,10);
+  persist();
+  showToast(`FU #${nextNum} logged for ${l.name}`, '#f59e0b');
+  refreshFuModal(l);
+  renderPipeline();
+}
+
+function markFuDone(leadId, fuNum){
+  const l = leads.find(x=>x.id===leadId); if(!l||!l.followups) return;
+  const fu = l.followups.find(f=>f.num===fuNum); if(!fu) return;
+  fu.doneDate = new Date().toISOString().slice(0,10);
+  delete fu._editing;
+  persist();
+  refreshFuModal(l);
+  renderPipeline();
+}
+
+function startFuEdit(leadId, fuNum){
+  const l = leads.find(x=>x.id===leadId); if(!l||!l.followups) return;
+  // Clear any other editing states
+  l.followups.forEach(f=>delete f._editing);
+  const fu = l.followups.find(f=>f.num===fuNum); if(!fu) return;
+  fu._editing = true;
+  renderFuTimeline(l);
+}
+
+function cancelFuEdit(leadId, fuNum){
+  const l = leads.find(x=>x.id===leadId); if(!l||!l.followups) return;
+  const fu = l.followups.find(f=>f.num===fuNum); if(!fu) return;
+  delete fu._editing;
+  renderFuTimeline(l);
+}
+
+function saveFuEdit(leadId, fuNum){
+  const l = leads.find(x=>x.id===leadId); if(!l||!l.followups) return;
+  const fu = l.followups.find(f=>f.num===fuNum); if(!fu) return;
+  const noteEl = document.getElementById(`fu-edit-note-${fuNum}`);
+  const dateEl = document.getElementById(`fu-edit-date-${fuNum}`);
+  if(noteEl) fu.note = noteEl.value.trim();
+  if(dateEl) fu.scheduledDate = dateEl.value;
+  delete fu._editing;
+  persist();
+  refreshFuModal(l);
+  renderPipeline();
+}
+
+function deleteFuEntry(leadId, fuNum){
+  const l = leads.find(x=>x.id===leadId); if(!l||!l.followups) return;
+  if(!confirm(`Delete Follow-Up #${fuNum}?`)) return;
+  l.followups = l.followups.filter(f=>f.num!==fuNum);
+  l.followups.forEach((f,i)=>f.num=i+1);
+  persist();
+  refreshFuModal(l);
+  renderPipeline();
+}
+
+function refreshFuModal(l){
+  renderFuTimeline(l);
+  const nextNum = l.followups.length > 0 ? l.followups[l.followups.length-1].num + 1 : 1;
+  const addLabel = document.getElementById('fu-add-label');
+  if(addLabel) addLabel.textContent = `Log Follow-Up #${nextNum}`;
+}
+
+// ═══════════════════════════════════════════════
+// LEADS TABLE
+// ═══════════════════════════════════════════════
+function renderLeads(data){
+  const list=data||getFilteredLeads();
+  document.getElementById('leads-tbody').innerHTML=list.length===0
+    ?`<tr><td colspan="11" style="text-align:center;padding:20px;color:#475569;">No leads found</td></tr>`
+    :list.map(l=>`<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:#6366f133;color:#818cf8;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${l.name[0]}</div>
+          <div>
+            <p style="font-size:12px;font-weight:600;color:#fff;cursor:pointer;" onclick="viewLead(${l.id})">${l.name}</p>
+            <p style="font-size:10px;color:#475569;">${l.role}</p>
+          </div>
+        </div>
+      </td>
+      <td>${catBadge(l.category||'Developer')}</td>
+      <td style="color:#94a3b8;">${l.company}</td>
+      <td><a href="tel:${l.phone}" style="color:#4ade80;text-decoration:none;font-size:11px;">${l.phone}</a></td>
+      <td>${l.linkedin_personal&&l.linkedin_personal!=='N/A'?`<a href="${l.linkedin_personal}" target="_blank" style="color:#818cf8;font-size:11px;">Personal ↗</a>`:'<span style="color:#334155;font-size:11px;">N/A</span>'}</td>
+      <td>${l.linkedin_company&&l.linkedin_company!=='N/A'?`<a href="${l.linkedin_company}" target="_blank" style="color:#60a5fa;font-size:11px;">Company ↗</a>`:'<span style="color:#334155;font-size:11px;">N/A</span>'}</td>
+      <td style="font-size:11px;color:#f472b6;">${l.instagram||'—'}</td>
+      <td><span class="badge ${stCls(l.status)}">${l.status}</span></td>
+      <td>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;">
+          <input type="checkbox" ${l.contacted?'checked':''} onchange="toggleContacted(${l.id},this.checked)" style="accent-color:#6366f1;"/>
+          <span style="font-size:10px;color:${l.contacted?'#4ade80':'#f87171'};">${l.contacted?'Yes':'No'}</span>
+        </label>
+      </td>
+      <td><span class="pipe-stage ${STAGES[l.stage-1].cls}">${STAGES[l.stage-1].emoji} ${STAGES[l.stage-1].name}</span></td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button class="btn btn-ghost btn-sm" onclick="viewLead(${l.id})">View</button>
+          <button class="btn btn-ghost btn-sm" onclick="editLead(${l.id})">Edit</button>
+          <button class="btn btn-ghost btn-sm" style="color:#f87171;" onclick="deleteLead(${l.id})">Del</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function getFilteredLeads(){
+  const q=(document.getElementById('lead-search')||{value:''}).value.toLowerCase();
+  const st=(document.getElementById('lead-filter-status')||{value:''}).value;
+  const co=(document.getElementById('lead-filter-contacted')||{value:''}).value;
+  const cat=(document.getElementById('lead-filter-category')||{value:''}).value;
+  return leads.filter(l=>{
+    const mq=!q||[l.name,l.company,l.phone,l.role,l.category].some(v=>(v||'').toLowerCase().includes(q));
+    const ms=!st||l.status===st;
+    const mc=!co||(co==='true'?l.contacted:!l.contacted);
+    const mcat=!cat||(l.category||'Developer')===cat;
+    return mq&&ms&&mc&&mcat;
+  });
+}
+
+function filterLeads(){renderLeads();}
+
+function toggleContacted(id,val){
+  const l=leads.find(x=>x.id===id);
+  if(l){ l.contacted=val; persist(); }
+}
+
+// ═══════════════════════════════════════════════
+// VIEW LEAD DETAIL MODAL
+// ═══════════════════════════════════════════════
+function viewLead(id){
+  const l=leads.find(x=>x.id===id); if(!l) return;
+  viewingLeadId=id;
+  document.getElementById('view-name').textContent=l.name;
+  document.getElementById('view-role-company').textContent=`${l.role} · ${l.company}`;
+  document.getElementById('view-status-badge').innerHTML=`${catBadge(l.category||'Developer')}&nbsp;<span class="badge ${stCls(l.status)}">${l.status.toUpperCase()}</span>`;
+
+  document.getElementById('view-contacts').innerHTML=`
+    <div style="background:#0b0d14;border:1px solid #1e2235;border-radius:8px;padding:10px;">
+      <p style="font-size:10px;color:#475569;margin-bottom:3px;">Personal Mobile</p>
+      <a href="tel:${l.phone}" style="font-size:13px;color:#4ade80;font-weight:600;text-decoration:none;">${l.phone}</a>
+    </div>
+    <div style="background:#0b0d14;border:1px solid #1e2235;border-radius:8px;padding:10px;">
+      <p style="font-size:10px;color:#475569;margin-bottom:3px;">Email</p>
+      <p style="font-size:12px;color:#e2e8f0;">${l.email||'—'}</p>
+    </div>
+    <div style="background:#0b0d14;border:1px solid #1e2235;border-radius:8px;padding:10px;">
+      <p style="font-size:10px;color:#475569;margin-bottom:5px;">LinkedIn</p>
+      ${l.linkedin_personal&&l.linkedin_personal!=='N/A'?`<a href="${l.linkedin_personal}" target="_blank" style="font-size:11px;color:#818cf8;display:block;margin-bottom:3px;">👤 Personal Profile ↗</a>`:''}
+      ${l.linkedin_company&&l.linkedin_company!=='N/A'?`<a href="${l.linkedin_company}" target="_blank" style="font-size:11px;color:#60a5fa;display:block;">🏢 Company Page ↗</a>`:''}
+    </div>
+    <div style="background:#0b0d14;border:1px solid #1e2235;border-radius:8px;padding:10px;">
+      <p style="font-size:10px;color:#475569;margin-bottom:3px;">Instagram</p>
+      <p style="font-size:12px;color:#f472b6;">${l.instagram||'—'}</p>
+    </div>`;
+
+  const sec=(label,content,color='#475569')=>content?`
+    <div style="background:#0b0d14;border:1px solid #1e2235;border-radius:8px;padding:12px;">
+      <p style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">${label}</p>
+      <p style="font-size:12px;color:#cbd5e1;line-height:1.6;">${content}</p>
+    </div>`:'';
+  document.getElementById('view-sections').innerHTML=
+    sec('🏢 Background & Company Info',l.background)+
+    sec('⚠️ Problems & Pain Points',l.problems,'#fbbf24')+
+    sec('📅 Upcoming Events / Opportunities',l.upcoming,'#4ade80')+
+    sec('📝 Call Notes',l.notes);
+
+  const stageBar=STAGES.map(s=>`
+    <div title="${s.name}" style="flex:1;height:6px;border-radius:3px;background:${s.id<=l.stage?'#6366f1':'#1e2235'};cursor:pointer;" onclick="setStage(${l.id},${s.id})"></div>`).join('');
+  document.getElementById('view-pipeline-bar').innerHTML=`
+    <div>
+      <p style="font-size:10px;color:#475569;margin-bottom:5px;">Pipeline: <span style="color:#818cf8;font-weight:700;">${STAGES[l.stage-1].emoji} Stage ${l.stage} — ${STAGES[l.stage-1].name}</span></p>
+      <div style="display:flex;gap:3px;width:280px;">${stageBar}</div>
+    </div>`;
+
+  document.getElementById('modal-view').style.display='flex';
+}
+
+function editCurrentLead(){closeModal('modal-view');editLead(viewingLeadId);}
+function advanceStage(){
+  const l=leads.find(x=>x.id===viewingLeadId);
+  if(l&&l.stage<7){l.stage++;viewLead(viewingLeadId);}
+  else if(l&&l.stage===7){showToast('Already Closed!','#22c55e');}
+}
+function setStage(id,stage){
+  const l=leads.find(x=>x.id===id);
+  if(l){l.stage=stage;persist();viewLead(id);}
+}
+
+// ═══════════════════════════════════════════════
+// PROJECTS
+// ═══════════════════════════════════════════════
+function statusBadge(s){
+  const m={running:'badge-running',upcoming:'badge-upcoming',closing:'badge-closing',unsold:'badge-unsold'};
+  const lb={running:'Running',upcoming:'Upcoming',closing:'Closing',unsold:'Stalled/Unsold'};
+  return `<span class="badge ${m[s]||''}">${lb[s]||s}</span>`;
+}
+
+function renderProjects(data){
+  const list=[...(data||getFilteredProjects())].sort((a,b)=>a.priority.localeCompare(b.priority));
+  const tb=document.getElementById('projects-tbody');
+  tb.innerHTML=list.length===0?`<tr><td colspan="10" style="text-align:center;padding:20px;color:#475569;">No projects</td></tr>`:
+    list.map(p=>{
+      const unsold=p.total-p.sold,pct=p.total>0?Math.round(p.sold/p.total*100):0;
+      return `<tr>
+        <td><span class="ptag ${p.priority.toLowerCase()}">${p.priority}</span></td>
+        <td style="color:#fff;font-weight:600;">${p.name}</td>
+        <td style="color:#94a3b8;">${p.dev}</td>
+        <td style="color:#64748b;">${p.loc}</td>
+        <td>${statusBadge(p.status)}</td>
+        <td style="color:#94a3b8;">${p.total.toLocaleString()}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div class="progress-bar" style="width:50px;"><div class="progress-fill" style="width:${pct}%;background:${pct>75?'#22c55e':pct>40?'#f59e0b':'#ef4444'};"></div></div>
+            <span style="font-size:10px;color:#64748b;">${p.sold.toLocaleString()} (${pct}%)</span>
+          </div>
+        </td>
+        <td style="font-weight:700;color:${unsold>300?'#f87171':unsold>100?'#fbbf24':'#94a3b8'};">${unsold.toLocaleString()}</td>
+        <td style="color:#64748b;">${p.completion}</td>
+        <td>
+          <div style="display:flex;gap:4px;">
+            <button class="btn btn-ghost btn-sm" onclick="editProject(${p.id})">Edit</button>
+            <button class="btn btn-ghost btn-sm" style="color:#f87171;" onclick="deleteProject(${p.id})">Del</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+}
+
+function getFilteredProjects(){
+  const q=(document.getElementById('proj-search')||{value:''}).value.toLowerCase();
+  const st=(document.getElementById('proj-filter')||{value:''}).value;
+  return projects.filter(p=>{
+    const mq=!q||[p.name,p.dev,p.loc].some(v=>(v||'').toLowerCase().includes(q));
+    return mq&&(!st||p.status===st);
+  });
+}
+function filterProjects(){renderProjects();}
+
+// ═══════════════════════════════════════════════
+// INVENTORY
+// ═══════════════════════════════════════════════
+function renderInventory(){
+  const sorted=[...projects].filter(p=>p.total-p.sold>0).sort((a,b)=>(b.total-b.sold)-(a.total-a.sold));
+  document.getElementById('inv-grid').innerHTML=sorted.map(p=>{
+    const u=p.total-p.sold,pct=p.total>0?Math.round(p.sold/p.total*100):0;
+    const bc=p.status==='unsold'?'#dc2626':p.status==='closing'?'#d97706':'#1e2235';
+    return `<div style="background:#13151f;border:1px solid ${bc};border-radius:10px;padding:14px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
+        <div><p style="font-size:13px;font-weight:700;color:#fff;line-height:1.3;">${p.name}</p><p style="font-size:11px;color:#475569;margin-top:2px;">${p.dev} · ${p.loc}</p></div>
+        ${statusBadge(p.status)}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-bottom:10px;">
+        <div><p style="font-size:18px;font-weight:800;color:#fff;">${p.total.toLocaleString()}</p><p style="font-size:9px;color:#475569;">Total</p></div>
+        <div><p style="font-size:18px;font-weight:800;color:#4ade80;">${p.sold.toLocaleString()}</p><p style="font-size:9px;color:#475569;">Sold</p></div>
+        <div><p style="font-size:18px;font-weight:800;color:${u>300?'#f87171':u>100?'#fbbf24':'#94a3b8'};">${u.toLocaleString()}</p><p style="font-size:9px;color:#475569;">Unsold</p></div>
+      </div>
+      <div class="progress-bar" style="margin-bottom:4px;"><div class="progress-fill" style="width:${pct}%;background:${pct>75?'#22c55e':pct>40?'#f59e0b':'#ef4444'};"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;"><span>${pct}% sold</span><span>${p.completion}</span></div>
+      ${p.notes?`<p style="font-size:11px;color:#475569;margin-top:8px;padding-top:8px;border-top:1px solid #1e2235;line-height:1.4;">${p.notes}</p>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════════
+function eventCard(ev,compact=false){
+  const typeColor={Expo:'#6366f1',Conference:'#0ea5e9',Launch:'#22c55e',RERA:'#f59e0b',Networking:'#ec4899',Other:'#64748b'};
+  const daysLeft=Math.ceil((new Date(ev.date)-new Date())/(1000*60*60*24));
+  const dl=daysLeft>0?`${daysLeft}d away`:'Past';
+  return `<div class="event-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:10px;font-weight:700;color:${typeColor[ev.type]||'#64748b'};background:${typeColor[ev.type]||'#64748b'}22;padding:2px 8px;border-radius:999px;border:1px solid ${typeColor[ev.type]||'#64748b'}44;">${ev.type}</span>
+      <span style="font-size:10px;color:#475569;">${dl}</span>
+    </div>
+    <p style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">${ev.name}</p>
+    <p style="font-size:11px;color:#475569;margin-bottom:6px;">📍 ${ev.loc} · 📅 ${new Date(ev.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</p>
+    ${ev.devs?`<p style="font-size:10px;color:#6366f1;margin-bottom:6px;">Developers: ${ev.devs}</p>`:''}
+    ${!compact&&ev.notes?`<p style="font-size:11px;color:#64748b;line-height:1.5;border-top:1px solid #1e2235;padding-top:6px;margin-top:6px;">${ev.notes}</p>`:''}
+    ${!compact?`<button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="deleteEvent(${ev.id})">Remove</button>`:''}
+  </div>`;
+}
+
+function renderEvents(){
+  const grid=document.getElementById('events-grid');
+  const sorted=[...events].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  grid.innerHTML=sorted.length?sorted.map(ev=>eventCard(ev)).join(''):`<div style="grid-column:1/-1;text-align:center;padding:40px;color:#475569;">No events yet. Add upcoming property expos, developer launches, or RERA meetings.</div>`;
+}
+
+// ═══════════════════════════════════════════════
+// NOTES
+// ═══════════════════════════════════════════════
+function renderNotes(){
+  const grid=document.getElementById('notes-grid');
+  const tagColors={Call:'#16a34a',Meeting:'#2563eb',Email:'#d97706','Site Visit':'#7c3aed','Follow-up':'#dc2626',WhatsApp:'#16a34a'};
+  grid.innerHTML=notes.length?notes.map((n,i)=>`
+    <div style="background:#13151f;border:1px solid #1e2235;border-radius:10px;padding:14px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:10px;font-weight:700;color:${tagColors[n.tag]||'#64748b'};background:${tagColors[n.tag]||'#64748b'}22;padding:2px 8px;border-radius:999px;">${n.tag}</span>
+        <button onclick="notes.splice(${i},1);persist();renderNotes();" style="color:#475569;background:none;border:none;cursor:pointer;font-size:16px;">&times;</button>
+      </div>
+      ${n.related?`<p style="font-size:11px;color:#6366f1;font-weight:600;margin-bottom:4px;">${n.related}</p>`:''}
+      <p style="font-size:12px;color:#cbd5e1;line-height:1.5;">${n.text}</p>
+      ${n.date?`<p style="font-size:10px;color:#f59e0b;margin-top:8px;padding-top:6px;border-top:1px solid #1e2235;">Follow-up: ${n.date}</p>`:''}
+    </div>`).join('')
+    :`<div style="grid-column:1/-1;text-align:center;padding:40px;color:#475569;">No notes yet.</div>`;
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+function stCls(s){return{hot:'tag-contacted',warm:'',cold:'tag-not-contacted'}[s]||'';}
+
+function catBadge(cat){
+  const cls={Developer:'cat-developer',Realtor:'cat-realtor',Broker:'cat-broker','Channel Partner':'cat-channel',Investor:'cat-investor','Govt / RERA':'cat-govt',Other:'cat-other'};
+  const ico={Developer:'🏗️',Realtor:'🏠',Broker:'📋',  'Channel Partner':'🤝',Investor:'💰','Govt / RERA':'🏛️',Other:'•'};
+  const c=cat||'Developer';
+  return `<span class="badge ${cls[c]||'cat-developer'}" style="gap:3px;">${ico[c]||'•'} ${c}</span>`;
+}
+
+function stLabel(s){
+  const m={hot:'background:#7f1d1d44;color:#f87171;border:1px solid #991b1b',warm:'background:#78350f44;color:#fbbf24;border:1px solid #b45309',cold:'background:#1e3a5f44;color:#60a5fa;border:1px solid #1d4ed8'};
+  return `<span style="${m[s]||''};padding:1px 8px;border-radius:999px;font-size:10px;font-weight:700;">${s.toUpperCase()}</span>`;
+}
+
+// ═══════════════════════════════════════════════
+// CRUD — LEADS
+// ═══════════════════════════════════════════════
+function openAddLeadModal(){
+  editingLeadId=null;
+  document.getElementById('modal-lead-title').textContent='Add Lead';
+  ['l-name','l-company','l-phone','l-email','l-linkedin-personal','l-linkedin-company','l-instagram','l-background','l-problems','l-upcoming','l-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('l-role').value='Founder';
+  document.getElementById('l-category').value='Developer';
+  document.getElementById('l-status').value='warm';
+  document.getElementById('l-stage').value='1';
+  document.getElementById('l-contacted').checked=false;
+  document.getElementById('modal-lead').style.display='flex';
+}
+
+function editLead(id){
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  editingLeadId=id;
+  document.getElementById('modal-lead-title').textContent='Edit Lead';
+  document.getElementById('l-name').value=l.name;
+  document.getElementById('l-role').value=l.role;
+  document.getElementById('l-category').value=l.category||'Developer';
+  document.getElementById('l-company').value=l.company;
+  document.getElementById('l-phone').value=l.phone;
+  document.getElementById('l-email').value=l.email||'';
+  document.getElementById('l-linkedin-personal').value=l.linkedin_personal||'';
+  document.getElementById('l-linkedin-company').value=l.linkedin_company||'';
+  document.getElementById('l-instagram').value=l.instagram||'';
+  document.getElementById('l-status').value=l.status;
+  document.getElementById('l-stage').value=l.stage;
+  document.getElementById('l-contacted').checked=l.contacted;
+  document.getElementById('l-background').value=l.background||'';
+  document.getElementById('l-problems').value=l.problems||'';
+  document.getElementById('l-upcoming').value=l.upcoming||'';
+  document.getElementById('l-notes').value=l.notes||'';
+  document.getElementById('modal-lead').style.display='flex';
+}
+
+function saveLead(){
+  const name=document.getElementById('l-name').value.trim();
+  if(!name)return alert('Name required');
+  const data={name,role:document.getElementById('l-role').value,category:document.getElementById('l-category').value,company:document.getElementById('l-company').value,
+    phone:document.getElementById('l-phone').value,email:document.getElementById('l-email').value,
+    linkedin_personal:document.getElementById('l-linkedin-personal').value,
+    linkedin_company:document.getElementById('l-linkedin-company').value,
+    instagram:document.getElementById('l-instagram').value,
+    status:document.getElementById('l-status').value,
+    stage:parseInt(document.getElementById('l-stage').value)||1,
+    contacted:document.getElementById('l-contacted').checked,
+    priority:5,
+    background:document.getElementById('l-background').value,
+    problems:document.getElementById('l-problems').value,
+    upcoming:document.getElementById('l-upcoming').value,
+    notes:document.getElementById('l-notes').value};
+  if(editingLeadId){const i=leads.findIndex(l=>l.id===editingLeadId);leads[i]={...leads[i],...data};editingLeadId=null;}
+  else{data.id=Date.now();leads.push(data);}
+  persist();
+  closeModal('modal-lead');renderLeads();
+}
+
+function deleteLead(id){if(!confirm('Delete?'))return;leads=leads.filter(l=>l.id!==id);persist();renderLeads();}
+
+// ═══════════════════════════════════════════════
+// CRUD — PROJECTS
+// ═══════════════════════════════════════════════
+function openAddProjectModal(){
+  editingProjectId=null;
+  document.getElementById('modal-proj-title').textContent='Add Project';
+  ['p-name','p-dev','p-loc','p-completion','p-type','p-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('p-total').value='0';document.getElementById('p-sold').value='0';
+  document.getElementById('p-status').value='running';document.getElementById('p-prio').value='P3';
+  document.getElementById('modal-project').style.display='flex';
+}
+
+function editProject(id){
+  const p=projects.find(x=>x.id===id);if(!p)return;
+  editingProjectId=id;
+  document.getElementById('modal-proj-title').textContent='Edit Project';
+  document.getElementById('p-name').value=p.name;document.getElementById('p-dev').value=p.dev;
+  document.getElementById('p-loc').value=p.loc;document.getElementById('p-status').value=p.status;
+  document.getElementById('p-prio').value=p.priority;document.getElementById('p-total').value=p.total;
+  document.getElementById('p-sold').value=p.sold;document.getElementById('p-completion').value=p.completion;
+  document.getElementById('p-type').value=p.type||'';document.getElementById('p-notes').value=p.notes||'';
+  document.getElementById('modal-project').style.display='flex';
+}
+
+function saveProject(){
+  const name=document.getElementById('p-name').value.trim();if(!name)return alert('Name required');
+  const data={name,dev:document.getElementById('p-dev').value,loc:document.getElementById('p-loc').value,
+    status:document.getElementById('p-status').value,priority:document.getElementById('p-prio').value,
+    total:parseInt(document.getElementById('p-total').value)||0,sold:parseInt(document.getElementById('p-sold').value)||0,
+    completion:document.getElementById('p-completion').value,type:document.getElementById('p-type').value,
+    notes:document.getElementById('p-notes').value};
+  if(editingProjectId){const i=projects.findIndex(p=>p.id===editingProjectId);projects[i]={...projects[i],...data};editingProjectId=null;}
+  else{data.id=Date.now();projects.push(data);}
+  persist();
+  closeModal('modal-project');renderProjects();
+}
+
+function deleteProject(id){if(!confirm('Delete?'))return;projects=projects.filter(p=>p.id!==id);persist();renderProjects();}
+
+// ═══════════════════════════════════════════════
+// CRUD — EVENTS & NOTES
+// ═══════════════════════════════════════════════
+function openAddEventModal(){
+  ['ev-name','ev-loc','ev-devs','ev-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ev-date').value='';document.getElementById('ev-type').value='Expo';
+  document.getElementById('modal-event').style.display='flex';
+}
+function saveEvent(){
+  const name=document.getElementById('ev-name').value.trim();if(!name)return alert('Name required');
+  events.push({id:Date.now(),name,date:document.getElementById('ev-date').value,loc:document.getElementById('ev-loc').value,
+    type:document.getElementById('ev-type').value,devs:document.getElementById('ev-devs').value,notes:document.getElementById('ev-notes').value});
+  persist();
+  closeModal('modal-event');renderEvents();
+  document.getElementById('events-count').textContent=events.length;
+}
+function deleteEvent(id){events=events.filter(e=>e.id!==id);persist();renderEvents();}
+
+function openAddNoteModal(){
+  ['n-related','n-text','n-date'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('n-tag').value='Call';
+  document.getElementById('modal-note').style.display='flex';
+}
+function saveNote(){
+  const text=document.getElementById('n-text').value.trim();if(!text)return alert('Note required');
+  notes.push({related:document.getElementById('n-related').value,text,date:document.getElementById('n-date').value,tag:document.getElementById('n-tag').value});
+  persist();
+  closeModal('modal-note');renderNotes();
+}
+
+// ═══════════════════════════════════════════════
+// GLOBAL SEARCH & UTILS
+// ═══════════════════════════════════════════════
+function globalSearch(q){
+  if(!q.trim())return;
+  const lc=q.toLowerCase();
+  if(projects.some(p=>[p.name,p.dev,p.loc].some(v=>v.toLowerCase().includes(lc)))){show('projects');}
+  else if(leads.some(l=>[l.name,l.company,l.phone].some(v=>v.toLowerCase().includes(lc)))){show('leads');}
+}
+
+function closeModal(id){document.getElementById(id).style.display='none';}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';}));
+
+function exportCSV(){
+  const rows=[['Name','Role','Company','Personal Phone','Email','Personal LinkedIn','Company LinkedIn','Instagram','Status','Contacted','Pipeline Stage','Background','Problems','Notes']];
+  leads.forEach(l=>rows.push([l.name,l.role,l.company,l.phone,l.email||'',l.linkedin_personal||'',l.linkedin_company||'',l.instagram||'',l.status,l.contacted?'Yes':'No',STAGES[l.stage-1].name,l.background||'',l.problems||'',l.notes||'']));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='chandigarh_re_crm.csv';a.click();
+}
+
+// INIT
+show('dashboard');
+</script>
+</body>
+</html>
