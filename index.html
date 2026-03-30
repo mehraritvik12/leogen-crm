@@ -862,57 +862,62 @@ let events = [
 ];
 
 // ═══════════════════════════════════════════════
-// REAL-TIME SYNC (Gun.js) + localStorage fallback
+// REAL-TIME SYNC — Firebase Realtime Database
 // ═══════════════════════════════════════════════
-const STORAGE_KEY = 'recrm_v1';
-const GUN_KEY     = 'recrm-leogen-2025-v1'; // unique namespace
-
-let _gun = null;
-let _syncStore = null;
-let _syncBusy  = false; // prevent echo loop
+const STORAGE_KEY  = 'recrm_v1';
+const FB_URL       = 'https://leogen-506bf-default-rtdb.firebaseio.com';
+const SESSION_ID   = Math.random().toString(36).slice(2); // unique per tab/device
+let   _fbRef       = null;
 
 function initSync(){
   try {
-    _gun = GUN(['https://gun-manhattan.herokuapp.com/gun','https://gun-us.herokuapp.com/gun']);
-    _syncStore = _gun.get(GUN_KEY);
+    if(!firebase.apps.length){
+      firebase.initializeApp({ databaseURL: FB_URL });
+    }
+    const db = firebase.database();
+    _fbRef = db.ref('crm_v1');
 
-    _syncStore.on(raw => {
-      if(!raw || !raw.data || _syncBusy) return;
-      try {
-        const d = JSON.parse(raw.data);
-        if(!d || !d.leads) return;
-        // Only apply if newer than what we have
-        if(d.ts && d.ts <= (window._lastPushTs||0)) return;
+    // Pull latest data from Firebase on login (merge if Firebase has more)
+    _fbRef.once('value', snap => {
+      const d = snap.val();
+      if(d && d.leads && d.leads.length >= leads.length){
         leads    = d.leads;
         projects = d.projects || projects;
         events   = d.events   || events;
         notes    = d.notes    || notes;
-        // Also write to localStorage as cache
-        localStorage.setItem(STORAGE_KEY, raw.data);
-        // Refresh UI if logged in
-        if(document.getElementById('crm-app').style.display !== 'none'){
-          const active = document.querySelector('.section.active');
-          if(active) render(active.id.replace('sec-',''));
-          showToast('↻ Synced', '#22c55e');
-        }
-      } catch(e){}
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({leads,projects,events,notes}));
+        const active = document.querySelector('.section.active');
+        if(active) render(active.id.replace('sec-',''));
+      }
+      setSyncStatus('online');
+
+      // Now listen for live changes from OTHER devices
+      _fbRef.on('value', snap => {
+        const d = snap.val();
+        if(!d || !d.leads || d._session === SESSION_ID) return; // skip our own writes
+        leads    = d.leads;
+        projects = d.projects || projects;
+        events   = d.events   || events;
+        notes    = d.notes    || notes;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({leads,projects,events,notes}));
+        const active = document.querySelector('.section.active');
+        if(active) render(active.id.replace('sec-',''));
+        showToast('↻ Synced from another device', '#22c55e');
+      });
     });
 
-    setSyncStatus('online');
   } catch(e){
+    console.warn('Firebase sync error:', e);
     setSyncStatus('offline');
   }
 }
 
 function persist(){
-  const payload = JSON.stringify({ leads, projects, events, notes, ts: Date.now() });
-  // Always save locally first (instant)
-  try { localStorage.setItem(STORAGE_KEY, payload); } catch(e){}
-  // Push to Gun (cross-device)
-  if(_syncStore){
-    _syncBusy = true;
-    window._lastPushTs = Date.now();
-    _syncStore.put({ data: payload }, () => { _syncBusy = false; });
+  // 1. Save locally (instant)
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({leads,projects,events,notes})); } catch(e){}
+  // 2. Push to Firebase (cross-device sync)
+  if(_fbRef){
+    _fbRef.set({ leads, projects, events, notes, _session: SESSION_ID });
   }
 }
 
@@ -925,13 +930,13 @@ function loadFromStorage(){
     if(d.projects&& d.projects.length) projects = d.projects;
     if(d.events  && d.events.length)   events   = d.events;
     if(d.notes)                        notes    = d.notes;
-  } catch(e) {}
+  } catch(e){}
 }
 
 function setSyncStatus(s){
   const el = document.getElementById('sync-status');
   if(!el) return;
-  el.textContent = s === 'online' ? '● Sync On' : '○ Offline';
+  el.textContent = s === 'online' ? '● Synced' : '○ Offline';
   el.style.color  = s === 'online' ? '#4ade80'  : '#f87171';
 }
 
