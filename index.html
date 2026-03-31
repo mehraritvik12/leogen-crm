@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
 <title>RE-CRM · Chandigarh Tricity</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -514,7 +516,7 @@ function clearSession(){
 function showApp(){
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('crm-app').style.display = 'flex';
-  renderDash();
+  try { renderDash(); } catch(e){ console.warn('renderDash error:', e); }
   initSync();
   // Keep session alive on any click/keypress
   document.addEventListener('click',    touchSession, { passive:true });
@@ -1709,10 +1711,12 @@ function saveLead(){
     problems:document.getElementById('l-problems').value,
     upcoming:document.getElementById('l-upcoming').value,
     notes:document.getElementById('l-notes').value};
+  const isEdit=!!editingLeadId;
   if(editingLeadId){const i=leads.findIndex(l=>l.id===editingLeadId);leads[i]={...leads[i],...data};editingLeadId=null;}
-  else{data.id=Date.now();leads.push(data);}
+  else{data.id=Date.now();data.followups=[];leads.push(data);}
   persist();
   closeModal('modal-lead');renderLeads();
+  showToast(isEdit?'Lead updated ✓':'Lead added ✓','#22c55e');
 }
 
 function deleteLead(id){if(!confirm('Delete?'))return;leads=leads.filter(l=>l.id!==id);persist();renderLeads();}
@@ -1752,6 +1756,7 @@ function saveProject(){
   else{data.id=Date.now();projects.push(data);}
   persist();
   closeModal('modal-project');renderProjects();
+  showToast('Project saved ✓','#22c55e');
 }
 
 function deleteProject(id){if(!confirm('Delete?'))return;projects=projects.filter(p=>p.id!==id);persist();renderProjects();}
@@ -1771,6 +1776,7 @@ function saveEvent(){
   persist();
   closeModal('modal-event');renderEvents();
   document.getElementById('events-count').textContent=events.length;
+  showToast('Event saved ✓','#22c55e');
 }
 function deleteEvent(id){events=events.filter(e=>e.id!==id);persist();renderEvents();}
 
@@ -1784,6 +1790,7 @@ function saveNote(){
   notes.push({related:document.getElementById('n-related').value,text,date:document.getElementById('n-date').value,tag:document.getElementById('n-tag').value});
   persist();
   closeModal('modal-note');renderNotes();
+  showToast('Note saved ✓','#22c55e');
 }
 
 // ═══════════════════════════════════════════════
